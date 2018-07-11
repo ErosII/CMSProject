@@ -1,5 +1,6 @@
 <?page title="Simple DOM Generator"?>
-	<window title="Simple DOM Generator" border="normal"
+	<window id="finestraPrincipale"
+			title="Simple DOM Generator" border="normal"
 			apply="org.zkoss.bind.BindComposer"
 			viewModel = "@id('vm') @init('zkVelocityDomLayout.zkVelocityDomlayout.DOMViewModel')"
 	>
@@ -15,8 +16,10 @@
 					<draggableTree model="@bind(vm.model)"></draggableTree>
 				
 					<vlayout>
-						<popup id="pp">
-	    					<window id="ppW" title="Add Menu Popup" width="980px" height="500px" closable="true"
+						<popup id="pp" apply="org.zkoss.bind.BindComposer"
+	    							 viewModel = "@id('vmPop') @init('zkVelocityDomLayout.zkVelocityDomlayout.TestComponentViewModel')">
+	    					<window  
+	    							 id="ppW" title="Add Menu Popup" width="980px" height="500px" closable="true"
 	    							 onClose="pp.close(); event.stopPropagation();"
 	    							 mode="modal" visible="false"
 	    					>
@@ -25,15 +28,15 @@
 	    							Add a component
 	    							<space />
 	    							Title:
-	    							<textbox value="@bind(vm.title)"
+	    							<textbox value="@bind(vmPop.title)"
 	    								width="100%">
 	    							</textbox>
 	    							Subtitle:
-	    							<textbox value="@bind(vm.subtitle)"
+	    							<textbox value="@bind(vmPop.subtitle)"
 	    								width="100%">
 	    							</textbox>
 	    							Comment:
-	    							<textbox value="@bind(vm.text)"
+	    							<textbox value="@bind(vmPop.text)"
 	    								width="100%" height="150px">
 	    							</textbox>
 	    							<div align="center">
@@ -45,32 +48,6 @@
 	    					</window>
 						</popup>
 						
-						<popup id="po">
-	    					<window title="Option Popup" width="980px" height="500px">
-	
-	    						<vlayout>
-	    							Edit your choice:
-	    							<space />
-	    							Title:
-	    							<textbox value="@bind(vm.title)"
-	    								width="100%">
-	    							</textbox>
-	    							Subtitle:
-	    							<textbox value="@bind(vm.subtitle)"
-	    								width="100%">
-	    							</textbox>
-	    							Comment:
-	    							<textbox value="@bind(vm.text)"
-	    								width="100%" height="150px">
-	    							</textbox>
-	    							<div align="center">
-	    								<button label="Generate Page"
-	    									onClick="@command('generatePage')" />
-	    							</div>
-	    						</vlayout>
-	
-	    					</window>
-						</popup>
 				</vlayout>
 				</div>
 			</west>
@@ -85,11 +62,11 @@
 			</south>
 			<center border="0">
 					<div align="center">
-						<button iconSclass="z-icon-plus" onClick='pp.open(self, null); ppW.setVisible(true);'/>
+						<button iconSclass="z-icon-plus" onClick='pp.open(self, "overlap"); ppW.setVisible(true);'/>
 						
 						<button iconSclass="z-icon-minus"/>
 						
-						<button iconSclass="z-icon-gear" onClick='po.open(self, "before_start");'/>
+						<button iconSclass="z-icon-gear"/>
 					</div>		
 			</center>
 		</borderlayout>
