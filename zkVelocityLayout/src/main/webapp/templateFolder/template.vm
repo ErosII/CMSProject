@@ -1,0 +1,30 @@
+<html>
+	<head>
+	<title>A simple WebPage</title>
+	</head>
+	<body>
+	
+	 #foreach ($rno in $userDataMap.keySet())
+	 	#if($rno == "1001")
+	 		#set ($title = $userDataMap.get($rno)) 	
+		#end
+		#if($rno == "1002")
+	 		#set ($subtitle = $userDataMap.get($rno))	   		   	
+		#end
+		#if($rno == "1003")
+	 		#set ($text= $userDataMap.get($rno))	   		   	
+		#end
+						 
+	 #end
+
+	#if((!$title && !$subtitle && !$text) || ($title=="" && $subtitle=="" && $text==""))
+		<p>Non hai inserito nulla</p>
+	#else 
+	<h1>$!title</h1> 
+		<h2>$!subtitle</h2>
+		<hr></hr>
+		<p>$!text</p>
+	#end
+
+	</body>
+</html>
