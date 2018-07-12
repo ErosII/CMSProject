@@ -13,7 +13,7 @@
 			</north>
 			<west width="20%" border="0">
 				<div>
-					<draggableTree model="@bind(vm.model)"></draggableTree>
+					<draggableTree model="@load(vm.model)" selectedElement="@save(vm.selectedElement)"></draggableTree>
 				
 					<vlayout>
 						<popup id="pp" apply="org.zkoss.bind.BindComposer"
@@ -43,7 +43,7 @@
 	    								<button label="Generate Page"
 	    									onClick="@command('generatePage')" />
 	    								<button label="Add node"
-	    									onClick="@command('addNode', parent=vm.root, model=vm.model)" />
+	    									onClick="@command('addNode', parent=vm.selectedElement, model=vm.model)" />
 	    								<button label="Reload tree"
 	    					 				onClick="@global-command('reloadTree', componentModel=vmPop.childModel)" />
 	    								<draggableTree model="@bind(vmPop.childModel)"></draggableTree>

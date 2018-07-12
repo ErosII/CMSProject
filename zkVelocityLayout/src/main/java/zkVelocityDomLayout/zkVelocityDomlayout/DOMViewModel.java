@@ -24,7 +24,11 @@ import org.zkoss.zk.ui.WebApps;
 import biz.opengate.zkComponents.draggableTree.*;
 
 public class DOMViewModel {
-		
+	
+	private DraggableTreeElement root;
+	private DraggableTreeModel model;
+	private DraggableTreeElement selectedElement;
+	
 	public DraggableTreeElement getRoot() {
 		return root;
 	}
@@ -41,15 +45,22 @@ public class DOMViewModel {
 		this.model = model;
 	}
 
-	private DraggableTreeElement root;
-	private DraggableTreeModel model;
-	
+	public DraggableTreeElement getSelectedElement() {
+		return selectedElement;
+	}
+
+	public void setSelectedElement(DraggableTreeElement selectedElement) {
+		System.out.println("setSelectedElement - main");
+		this.selectedElement = selectedElement;
+	}
+
 	@Init
 	@NotifyChange("*")
 	public void init() {
 
-		root = new DraggableTreeElement(null,"Pagina Esempio");
-
+		root = new DraggableTreeElement(null,"Sample Page");
+		new DraggableTreeElement(root,"First Element");
+		new DraggableTreeElement(root,"Second Element");
 		model = new DraggableTreeModel(root);
 
 	}

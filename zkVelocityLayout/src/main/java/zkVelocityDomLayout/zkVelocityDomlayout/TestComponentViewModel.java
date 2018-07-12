@@ -50,7 +50,16 @@ public class TestComponentViewModel {
 
 	private DraggableTreeModel childModel;
 	private DraggableTreeElement childRoot;
+	private DraggableTreeElement childSelectedElement;
 	
+	public DraggableTreeElement getSelectedElement() {
+		return childSelectedElement;
+	}
+
+	public void setSelectedElement(DraggableTreeElement selectedElement) {
+		this.childSelectedElement = selectedElement;
+	}
+
 	public String getTitle() {
 		return title;
 	}
@@ -147,6 +156,7 @@ public class TestComponentViewModel {
 		
 
 		System.out.println("Aggiungo il nodo");
+		System.out.println(parentRoot);
 		new DraggableTreeElement(parentRoot,title);
 		childModel=new DraggableTreeModel(parentRoot);
 		
