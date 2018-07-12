@@ -10,10 +10,16 @@ import javax.servlet.ServletContext;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
+import org.zkoss.bind.annotation.BindingParam;
 import org.zkoss.bind.annotation.Command;
+import org.zkoss.bind.annotation.GlobalCommand;
+import org.zkoss.bind.annotation.Init;
 import org.zkoss.bind.annotation.NotifyChange;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.WebApps;
+
+import biz.opengate.zkComponents.draggableTree.DraggableTreeElement;
+import biz.opengate.zkComponents.draggableTree.DraggableTreeModel;
 
 public class TestComponentViewModel {
 	
@@ -26,6 +32,24 @@ public class TestComponentViewModel {
 	private String subtitle;
 	private String text;
 	
+	public DraggableTreeModel getChildModel() {
+		return childModel;
+	}
+
+	public void setChildModel(DraggableTreeModel childModel) {
+		this.childModel = childModel;
+	}
+
+	public DraggableTreeElement getChildRoot() {
+		return childRoot;
+	}
+
+	public void setChildRoot(DraggableTreeElement childRoot) {
+		this.childRoot = childRoot;
+	}
+
+	private DraggableTreeModel childModel;
+	private DraggableTreeElement childRoot;
 	
 	public String getTitle() {
 		return title;
@@ -105,8 +129,8 @@ public class TestComponentViewModel {
         template.merge(vc, writer);
 
          try {
-        	 out = new FileWriter("/home/piccioni/git/CMSProject/zkVelocityLayout/src/main/webapp/templateFolder/mod.html");
-        	 System.out.println("Salvo il template generato");
+        	 String path = System.getProperty("user.home");
+           	 out = new FileWriter(path + "/git/CMSProject/zkVelocityLayout/src/main/webapp/templateFolder/mod.html");
         	 out.write(writer.toString());
         	 out.close();
         	 System.out.println(writer);
@@ -118,8 +142,24 @@ public class TestComponentViewModel {
 	}
 	
 	@Command
-	public void comandRefresh(){
-	    Executions.sendRedirect("");
-	}
+	@NotifyChange ("*")
+	public void addNode(@BindingParam("model") DraggableTreeModel parentModel, @BindingParam("parent") DraggableTreeElement parentRoot) {
+		
 
+		System.out.println("Aggiungo il nodo");
+		new DraggableTreeElement(parentRoot,title);
+		childModel=new DraggableTreeModel(parentRoot);
+		
+	}
+	
+	@Init
+	@NotifyChange ("*")
+	public void init() {
+				
+		DraggableTreeElement root=new DraggableTreeElement(null,"Root");
+		new DraggableTreeElement(root,"Child");
+		childModel=new DraggableTreeModel(root);
+		
+	}
+	
 }

@@ -14,7 +14,9 @@ import javax.servlet.ServletContext;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
+import org.zkoss.bind.annotation.BindingParam;
 import org.zkoss.bind.annotation.Command;
+import org.zkoss.bind.annotation.GlobalCommand;
 import org.zkoss.bind.annotation.NotifyChange;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.WebApps;
@@ -47,9 +49,17 @@ public class DOMViewModel {
 	public void init() {
 
 		root = new DraggableTreeElement(null,"Pagina Esempio");
-		
+
 		model = new DraggableTreeModel(root);
 
+	}
+	
+	@GlobalCommand
+	@NotifyChange("model")
+	public void reloadTree(@BindingParam("componentModel") DraggableTreeModel componentModel){
+		System.out.println(componentModel);
+		model=componentModel;
+	    System.out.println("Ricarico l'albero");
 	}
 	
 }

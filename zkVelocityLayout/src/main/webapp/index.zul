@@ -19,7 +19,7 @@
 						<popup id="pp" apply="org.zkoss.bind.BindComposer"
 	    							 viewModel = "@id('vmPop') @init('zkVelocityDomLayout.zkVelocityDomlayout.TestComponentViewModel')">
 	    					<window  
-	    							 id="ppW" title="Add Menu Popup" width="980px" height="500px" closable="true"
+	    							 id="ppW" title="Add Menu Popup" width="980px" height="1000px" closable="true"
 	    							 onClose="pp.close(); event.stopPropagation();"
 	    							 mode="modal" visible="false"
 	    					>
@@ -42,6 +42,11 @@
 	    							<div align="center">
 	    								<button label="Generate Page"
 	    									onClick="@command('generatePage')" />
+	    								<button label="Add node"
+	    									onClick="@command('addNode', parent=vm.root, model=vm.model)" />
+	    								<button label="Reload tree"
+	    					 				onClick="@global-command('reloadTree', componentModel=vmPop.childModel)" />
+	    								<draggableTree model="@bind(vmPop.childModel)"></draggableTree>
 	    							</div>
 	    						</vlayout>
 	
@@ -67,6 +72,7 @@
 						<button iconSclass="z-icon-minus"/>
 						
 						<button iconSclass="z-icon-gear"/>
+						
 					</div>		
 			</center>
 		</borderlayout>
