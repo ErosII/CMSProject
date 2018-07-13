@@ -1,5 +1,5 @@
 <?page title="Simple DOM Generator"?>
-	<window id="finestraPrincipale"
+	<window id="mainWindow"
 			title="Simple DOM Generator" border="normal"
 			apply="org.zkoss.bind.BindComposer"
 			viewModel = "@id('vm') @init('zkVelocityDomLayout.zkVelocityDomlayout.DOMViewModel')"
@@ -13,18 +13,16 @@
 			</north>
 			<west width="20%" border="0">
 				<div>
-					<draggableTree model="@load(vm.model)" selectedElement="@save(vm.selectedElement)"></draggableTree>
+					<draggableTree model="@bind(vm.model)" selectedElement="@save(vm.selectedElement)"></draggableTree>
 				
-					<vlayout>
-						<popup id="pp" apply="org.zkoss.bind.BindComposer"
-	    							 viewModel = "@id('vmPop') @init('zkVelocityDomLayout.zkVelocityDomlayout.TestComponentViewModel')">
-	    					<window  
-	    							 id="ppW" title="Add Menu Popup" width="980px" height="1000px" closable="true"
-	    							 onClose="pp.close(); event.stopPropagation();"
-	    							 mode="modal" visible="false"
+
+							<window id="popupWindow" title="Add PopUp" width="50%" height="75%" closable="false"
+	    							onClose='popupWindow.setVisible(false);'
+	    							mode="modal" visible="false"
+	    							apply="org.zkoss.bind.BindComposer"
+	    							viewModel = "@id('vmPop') @init('zkVelocityDomLayout.zkVelocityDomlayout.TestComponentViewModel')"
 	    					>
-	
-	    						<vlayout>
+ 								<vlayout>
 	    							Add a component
 	    							<space />
 	    							Title:
@@ -42,18 +40,13 @@
 	    							<div align="center">
 	    								<button label="Generate Page"
 	    									onClick="@command('generatePage')" />
-	    								<button label="Add node"
-	    									onClick="@command('addNode', parent=vm.selectedElement, model=vm.model)" />
-	    								<button label="Reload tree"
-	    					 				onClick="@global-command('reloadTree', componentModel=vmPop.childModel)" />
-	    								<draggableTree model="@bind(vmPop.childModel)"></draggableTree>
+	    								<button label="Add node globale"
+	    									onClick="@global-command('addNode', nodeTitle=vmPop.title)" />
+	    								<button label="Back"
+	    									onClick='popupWindow.setVisible(false);'/>
 	    							</div>
 	    						</vlayout>
-	
-	    					</window>
-						</popup>
-						
-				</vlayout>
+ 							</window>	
 				</div>
 			</west>
 			
@@ -67,12 +60,9 @@
 			</south>
 			<center border="0">
 					<div align="center">
-						<button iconSclass="z-icon-plus" onClick='pp.open(self, "overlap"); ppW.setVisible(true);'/>
-						
+						<button iconSclass="z-icon-plus" onClick="popupWindow.setVisible(true)"/>
 						<button iconSclass="z-icon-minus"/>
-						
 						<button iconSclass="z-icon-gear"/>
-						
 					</div>		
 			</center>
 		</borderlayout>

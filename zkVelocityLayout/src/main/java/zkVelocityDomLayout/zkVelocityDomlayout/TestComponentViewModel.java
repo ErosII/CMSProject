@@ -10,16 +10,15 @@ import javax.servlet.ServletContext;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
+import org.zkoss.bind.BindUtils;
 import org.zkoss.bind.annotation.BindingParam;
 import org.zkoss.bind.annotation.Command;
 import org.zkoss.bind.annotation.GlobalCommand;
 import org.zkoss.bind.annotation.Init;
 import org.zkoss.bind.annotation.NotifyChange;
+import org.zkoss.bind.impl.ChildrenBindingListModelDataEvent;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.WebApps;
-
-import biz.opengate.zkComponents.draggableTree.DraggableTreeElement;
-import biz.opengate.zkComponents.draggableTree.DraggableTreeModel;
 
 public class TestComponentViewModel {
 	
@@ -32,34 +31,6 @@ public class TestComponentViewModel {
 	private String subtitle;
 	private String text;
 	
-	public DraggableTreeModel getChildModel() {
-		return childModel;
-	}
-
-	public void setChildModel(DraggableTreeModel childModel) {
-		this.childModel = childModel;
-	}
-
-	public DraggableTreeElement getChildRoot() {
-		return childRoot;
-	}
-
-	public void setChildRoot(DraggableTreeElement childRoot) {
-		this.childRoot = childRoot;
-	}
-
-	private DraggableTreeModel childModel;
-	private DraggableTreeElement childRoot;
-	private DraggableTreeElement childSelectedElement;
-	
-	public DraggableTreeElement getSelectedElement() {
-		return childSelectedElement;
-	}
-
-	public void setSelectedElement(DraggableTreeElement selectedElement) {
-		this.childSelectedElement = selectedElement;
-	}
-
 	public String getTitle() {
 		return title;
 	}
@@ -149,27 +120,5 @@ public class TestComponentViewModel {
          }
      
 	}
-	
-	@Command
-	@NotifyChange ("*")
-	public void addNode(@BindingParam("model") DraggableTreeModel parentModel, @BindingParam("parent") DraggableTreeElement parentRoot) {
-		
-
-		System.out.println("Aggiungo il nodo");
-		System.out.println(parentRoot);
-		new DraggableTreeElement(parentRoot,title);
-		childModel=new DraggableTreeModel(parentRoot);
-		
-	}
-	
-	@Init
-	@NotifyChange ("*")
-	public void init() {
-				
-		DraggableTreeElement root=new DraggableTreeElement(null,"Root");
-		new DraggableTreeElement(root,"Child");
-		childModel=new DraggableTreeModel(root);
-		
-	}
-	
+			
 }

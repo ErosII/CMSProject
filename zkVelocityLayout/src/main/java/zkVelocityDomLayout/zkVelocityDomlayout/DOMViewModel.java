@@ -8,6 +8,7 @@ import java.io.StringWriter;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import javax.servlet.ServletContext;
 
@@ -25,52 +26,30 @@ import biz.opengate.zkComponents.draggableTree.*;
 
 public class DOMViewModel {
 	
-	private DraggableTreeElement root;
+	private DraggableTreeElement root = new DraggableTreeElement(null, "Sample Page");
 	private DraggableTreeModel model;
 	private DraggableTreeElement selectedElement;
-	
-	public DraggableTreeElement getRoot() {
-		return root;
-	}
 
-	public void setRoot(DraggableTreeElement root) {
-		this.root = root;
+	public DOMViewModel(){
+		new DraggableTreeElement(root,"First Element");
+		new DraggableTreeElement(root,"Second Element");
 	}
 
 	public DraggableTreeModel getModel() {
+		
+		if (model == null) {
+			model = new DraggableTreeModel(root);
+		}
 		return model;
 	}
 
-	public void setModel(DraggableTreeModel model) {
-		this.model = model;
-	}
-
-	public DraggableTreeElement getSelectedElement() {
-		return selectedElement;
-	}
-
 	public void setSelectedElement(DraggableTreeElement selectedElement) {
-		System.out.println("setSelectedElement - main");
 		this.selectedElement = selectedElement;
 	}
-
-	@Init
-	@NotifyChange("*")
-	public void init() {
-
-		root = new DraggableTreeElement(null,"Sample Page");
-		new DraggableTreeElement(root,"First Element");
-		new DraggableTreeElement(root,"Second Element");
-		model = new DraggableTreeModel(root);
-
-	}
-	
+		
 	@GlobalCommand
-	@NotifyChange("model")
-	public void reloadTree(@BindingParam("componentModel") DraggableTreeModel componentModel){
-		System.out.println(componentModel);
-		model=componentModel;
-	    System.out.println("Ricarico l'albero");
+	@NotifyChange("*")
+	public void addNode(@BindingParam("nodeTitle") String nodeTitle) {
+		new DraggableTreeElement(selectedElement,nodeTitle);
 	}
-	
 }
