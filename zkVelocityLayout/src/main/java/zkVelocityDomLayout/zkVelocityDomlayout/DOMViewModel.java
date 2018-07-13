@@ -18,9 +18,9 @@ import org.apache.velocity.app.VelocityEngine;
 import org.zkoss.bind.annotation.BindingParam;
 import org.zkoss.bind.annotation.Command;
 import org.zkoss.bind.annotation.GlobalCommand;
-import org.zkoss.bind.annotation.NotifyChange;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.WebApps;
+import org.zkoss.zk.ui.util.Clients;
 
 import biz.opengate.zkComponents.draggableTree.*;
 
@@ -46,10 +46,29 @@ public class DOMViewModel {
 	public void setSelectedElement(DraggableTreeElement selectedElement) {
 		this.selectedElement = selectedElement;
 	}
+	
+	public DraggableTreeElement getSelectedElement() {
+		return selectedElement;
+	}
 		
 	@GlobalCommand
 	@NotifyChange("*")
 	public void addNode(@BindingParam("nodeTitle") String nodeTitle) {
 		new DraggableTreeElement(selectedElement,nodeTitle);
+		root.recomputeSpacersRecursive();
+	}
+	
+	@Command
+	@NotifyChange("*")
+	public void deleteNode(){
+		if (selectedElement==null) {
+			Clients.showNotification("No selected element!");
+		}
+		else
+		{	
+			DraggableTreeComponent.removeFromParent(selectedElement);
+			root.recomputeSpacersRecursive();
+		}
+		
 	}
 }

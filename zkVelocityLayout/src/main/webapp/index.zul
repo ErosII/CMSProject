@@ -16,8 +16,8 @@
 					<draggableTree model="@bind(vm.model)" selectedElement="@save(vm.selectedElement)"></draggableTree>
 				
 
-							<window id="popupWindow" title="Add PopUp" width="50%" height="75%" closable="false"
-	    							onClose='popupWindow.setVisible(false);'
+							<window id="popupWindow" title="Add PopUp" width="50%" height="75%" 
+									contentStyle="overflow:auto;"
 	    							mode="modal" visible="false"
 	    							apply="org.zkoss.bind.BindComposer"
 	    							viewModel = "@id('vmPop') @init('zkVelocityDomLayout.zkVelocityDomlayout.TestComponentViewModel')"
@@ -33,17 +33,18 @@
 	    							<textbox value="@bind(vmPop.subtitle)"
 	    								width="100%">
 	    							</textbox>
-	    							Comment:
-	    							<textbox value="@bind(vmPop.text)"
-	    								width="100%" height="150px">
-	    							</textbox>
+	     							Comment:
+	    								<textbox value="@bind(vmPop.text)"
+	    									width="100%" height="200px">
+	    								</textbox>
+	    								
 	    							<div align="center">
 	    								<button label="Generate Page"
-	    									onClick="@command('generatePage')" />
-	    								<button label="Add node globale"
-	    									onClick="@global-command('addNode', nodeTitle=vmPop.title)" />
+	    									onClick="@command('generatePage')" width="30%" />
+	    								<button label="Add node"
+	    									onClick="@global-command('addNode', nodeTitle=vmPop.title)" width="30%"/>
 	    								<button label="Back"
-	    									onClick='popupWindow.setVisible(false);'/>
+	    									onClick='popupWindow.setVisible(false);' width="30%"/>
 	    							</div>
 	    						</vlayout>
  							</window>	
@@ -61,7 +62,7 @@
 			<center border="0">
 					<div align="center">
 						<button iconSclass="z-icon-plus" onClick="popupWindow.setVisible(true)"/>
-						<button iconSclass="z-icon-minus"/>
+						<button iconSclass="z-icon-minus" onClick="@command('deleteNode')"/>
 						<button iconSclass="z-icon-gear"/>
 					</div>		
 			</center>
