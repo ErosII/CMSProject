@@ -2,6 +2,8 @@ package zkVelocityDomLayout.zkVelocityDomlayout;
 
 public enum FragmentType {
 	
-	TESTCOMPONENT;
-
+	TESTCOMPONENT_01,
+	TESTCOMPONENT_02,
+	TESTCOMPONENT_03;
+	
 }

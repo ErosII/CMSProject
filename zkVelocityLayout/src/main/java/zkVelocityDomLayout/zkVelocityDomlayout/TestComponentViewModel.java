@@ -31,6 +31,8 @@ public class TestComponentViewModel {
 	private String subtitle;
 	private String text;
 	
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//////GETTERS AND SETTERS MASK
 	public String getTitle() {
 		return title;
 	}
@@ -54,7 +56,9 @@ public class TestComponentViewModel {
 	public void setText(String text) {
 		this.text = text;
 	}
-
+	
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//////GETTERS AND SETTERS DRAGGABLETREE EXTENSION
 	public String getFragmentId() {
 		return fragmentId;
 	}
@@ -79,6 +83,8 @@ public class TestComponentViewModel {
 		this.attributeDataMap = attributeDataMap;
 	}
 	
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//////COMMANDS
 	@Command
 	@NotifyChange
 	public void generatePage() throws Exception{
