@@ -10,55 +10,37 @@ import javax.servlet.ServletContext;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
-import org.zkoss.bind.BindUtils;
 import org.zkoss.bind.annotation.BindingParam;
 import org.zkoss.bind.annotation.Command;
-import org.zkoss.bind.annotation.GlobalCommand;
-import org.zkoss.bind.annotation.Init;
 import org.zkoss.bind.annotation.NotifyChange;
-import org.zkoss.bind.impl.ChildrenBindingListModelDataEvent;
-import org.zkoss.zk.ui.Executions;
+import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.WebApps;
+import org.zkoss.zk.ui.annotation.ComponentAnnotation;
+import org.zkoss.zk.ui.event.Events;
+import org.zkoss.zk.ui.util.Clients;
 
+import biz.opengate.zkComponents.draggableTree.DraggableTreeComponent;
+import biz.opengate.zkComponents.draggableTree.DraggableTreeElement;
+import biz.opengate.zkComponents.draggableTree.DraggableTreeModel;
+import zkVelocityLayout.FragmentPackage.FragmentType;
+
+//@ComponentAnnotation("@ZKBIND(ACCESS=both, SAVE_EVENT=onAddedNode)")
 public class TestComponentViewModel {
 	
 	private FileWriter out;
-	private String fragmentId;
 	private FragmentType fragmentTypeDef;
 	private Map<String,String> attributeDataMap;
 	
-	private String title;
-	private String subtitle;
-	private String text;
+	private DraggableTreeCmsElement componentRoot;
+	private DraggableTreeModel componentModel;
+	private DraggableTreeCmsElement componentSelectedElement;
+	
+	private String fragmentId;
+	private String contentString;
+	private String colorAttribute;
 	
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//////GETTERS AND SETTERS MASK
-	public String getTitle() {
-		return title;
-	}
-
-	public void setTitle(String title) {
-		this.title = title;
-	}
-
-	public String getSubtitle() {
-		return subtitle;
-	}
-
-	public void setSubtitle(String subtitle) {
-		this.subtitle = subtitle;
-	}
-
-	public String getText() {
-		return text;
-	}
-
-	public void setText(String text) {
-		this.text = text;
-	}
-	
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////
-	//////GETTERS AND SETTERS DRAGGABLETREE EXTENSION
 	public String getFragmentId() {
 		return fragmentId;
 	}
@@ -66,6 +48,25 @@ public class TestComponentViewModel {
 	public void setFragmentId(String fragmentId) {
 		this.fragmentId = fragmentId;
 	}
+
+	public String getContentString() {
+		return contentString;
+	}
+
+	public void setContentString(String contentString) {
+		this.contentString = contentString;
+	}
+
+	public String getColorAttribute() {
+		return colorAttribute;
+	}
+
+	public void setColorAttribute(String colorAttribute) {
+		this.colorAttribute = colorAttribute;
+	}
+	
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//////GETTERS AND SETTERS DRAGGABLETREE EXTENSION
 
 	public FragmentType getFragmentTypeDef() {
 		return fragmentTypeDef;
@@ -83,17 +84,42 @@ public class TestComponentViewModel {
 		this.attributeDataMap = attributeDataMap;
 	}
 	
+	public DraggableTreeCmsElement getComponentTreeElement() {
+		return componentRoot;
+	}
+
+	public void setComponentTreeElement(DraggableTreeCmsElement componentTreeElement) {
+		this.componentRoot = componentTreeElement;
+	}
+
+	public DraggableTreeModel getComponentModel() {
+		return componentModel;
+	}
+
+	public void setComponentModel(DraggableTreeModel componentModel) {
+		this.componentModel = componentModel;
+	}
+	
+	public DraggableTreeCmsElement getComponentSelectedElement() {
+		return componentSelectedElement;
+	}
+
+	public void setComponentSelectedElement(DraggableTreeCmsElement componentSelectedElement) {
+		this.componentSelectedElement = componentSelectedElement;
+	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//////COMMANDS
 	@Command
 	@NotifyChange
-	public void generatePage() throws Exception{
-		
+	public void addComponent(@BindingParam("model") DraggableTreeModel mainPageModel,
+							 @BindingParam("selectedElement") DraggableTreeCmsElement mainPageselectedElement,
+							 @BindingParam("root") DraggableTreeCmsElement mainPageRoot,
+							 @BindingParam("fragmentType") FragmentType componentType) throws Exception{
 		
 		Map<String,String> attributeDataMap = new HashMap<String,String>();
-		attributeDataMap.put("1001", title);
-		attributeDataMap.put("1002", subtitle);
-		attributeDataMap.put("1003", text);
+		attributeDataMap.put("id", fragmentId);
+		attributeDataMap.put("contentString", contentString);
+		attributeDataMap.put("colorAttribute", colorAttribute);
         VelocityEngine engine = new VelocityEngine();    
         
         ServletContext sc = WebApps.getCurrent().getServletContext();
@@ -108,7 +134,7 @@ public class TestComponentViewModel {
         Template template = engine.getTemplate("template.vm");
         
         VelocityContext vc = new VelocityContext();
-        vc.put("userDataMap", attributeDataMap);
+        vc.put("attributeDataMap", attributeDataMap);
           
         StringWriter writer = new StringWriter();
         
@@ -121,10 +147,32 @@ public class TestComponentViewModel {
         	 out.close();
         	 System.out.println(writer);
         	 
+        	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+        	//////NODE ADDING
+        	 System.out.println("Aggiunta nodo componente");
+        	 
+        		componentRoot=mainPageRoot;
+        		componentModel=mainPageModel;
+        		componentSelectedElement=mainPageselectedElement;
+        		
+        		if (componentSelectedElement==null) {
+        			Clients.showNotification("No selected node!");
+        		}
+        		else {
+        			
+        			new DraggableTreeCmsElement(componentSelectedElement,fragmentId, componentType, attributeDataMap);
+        			componentRoot.recomputeSpacersRecursive();
+        			//Events.postEvent("onAddedNode", (Component) TestComponentViewModel.this, null);
+        		}
          }catch (Exception e) {
         	 
          }
      
 	}
-			
+	
+	@Command
+	@NotifyChange ("*")
+	public void saveColor(@BindingParam ("colorAttribute") String color) {
+		this.colorAttribute=color;
+	}
 }

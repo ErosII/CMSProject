@@ -4,26 +4,26 @@
 	</head>
 	<body>
 	
-	 #foreach ($rno in $userDataMap.keySet())
-	 	#if($rno == "1001")
-	 		#set ($title = $userDataMap.get($rno)) 	
+	 #foreach ($rno in $attributeDataMap.keySet())
+	 	#if($rno == "id")
+	 		#set ($id = $attributeDataMap.get($rno)) 	
 		#end
-		#if($rno == "1002")
-	 		#set ($subtitle = $userDataMap.get($rno))	   		   	
+		#if($rno == "contentString")
+	 		#set ($content= $attributeDataMap.get($rno))	   		   	
 		#end
-		#if($rno == "1003")
-	 		#set ($text= $userDataMap.get($rno))	   		   	
+		#if($rno == "colorAttribute")
+	 		#set ($color= $attributeDataMap.get($rno))	   		   	
 		#end
 						 
 	 #end
 
-	#if((!$title && !$subtitle && !$text) || ($title=="" && $subtitle=="" && $text==""))
+	#if((!$id && !$content && !$color) || ($id=="" && $content=="" && $color==""))
 		<p>Non hai inserito nulla</p>
 	#else 
-	<h1>$!title</h1> 
-		<h2>$!subtitle</h2>
+	<h1 id="$id" style="color:$color;">$!content</h1> 
+		<h2>$!content</h2>
 		<hr></hr>
-		<p>$!text</p>
+		<p>$!content</p>
 	#end
 
 	</body>

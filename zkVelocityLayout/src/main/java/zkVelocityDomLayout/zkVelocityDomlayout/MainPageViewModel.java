@@ -2,26 +2,35 @@ package zkVelocityDomLayout.zkVelocityDomlayout;
 
 
 import org.zkoss.bind.annotation.NotifyChange;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.zkoss.bind.annotation.BindingParam;
 import org.zkoss.bind.annotation.Command;
 import org.zkoss.bind.annotation.GlobalCommand;
+import org.zkoss.zk.ui.annotation.ComponentAnnotation;
 import org.zkoss.zk.ui.util.Clients;
 
 import biz.opengate.zkComponents.draggableTree.*;
+import zkVelocityLayout.FragmentPackage.FragmentList;
+import zkVelocityLayout.FragmentPackage.FragmentType;
 
+//@ComponentAnnotation("@ZKBIND(ACCESS=both, SAVE_EVENT=onAddedNode)")
 public class MainPageViewModel {
-	
-	private DraggableTreeElement root = new DraggableTreeElement(null, "Sample Page");
+
+	private DraggableTreeCmsElement root;
 	private DraggableTreeModel model;
-	private DraggableTreeElement selectedElement;
+	private DraggableTreeCmsElement selectedElement;
 	private List<String> fragmentList;
 	private FragmentType selectedFragment;
 
 	public MainPageViewModel(){
-		new DraggableTreeElement(root,"First Element");
-		new DraggableTreeElement(root,"Second Element");
+	
+		Map<String, String> rootMap = new HashMap<String, String>();
+		rootMap.put("id", "root");
+		root= new DraggableTreeCmsElement(null, "Sample Page", null, rootMap);
 	}
 	
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -46,21 +55,36 @@ public class MainPageViewModel {
 		return model;
 	}
 
-	public void setSelectedElement(DraggableTreeElement selectedElement) {
+	public void setSelectedElement(DraggableTreeCmsElement selectedElement) {
 		this.selectedElement = selectedElement;
 	}
 	
-	public DraggableTreeElement getSelectedElement() {
+	public DraggableTreeCmsElement getSelectedElement() {
 		return selectedElement;
+	}
+	
+	public DraggableTreeElement getRoot() {
+		return root;
+	}
+
+	public void setRoot(DraggableTreeCmsElement root) {
+		this.root = root;
 	}
 	
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//////COMMANDS
 	@GlobalCommand
 	@NotifyChange("*")
-	public void addNode(@BindingParam("nodeTitle") String nodeTitle) {
-		new DraggableTreeElement(selectedElement,nodeTitle);
-		root.recomputeSpacersRecursive();
+	public void addNodeGlobal(@BindingParam("nodeTitle") String nodeTitle) {
+		
+		if (selectedElement==null) {
+			Clients.showNotification("No selected node!");
+		}
+		else {
+			new DraggableTreeElement(selectedElement,nodeTitle);
+			root.recomputeSpacersRecursive();
+		}
+
 	}
 	
 	@GlobalCommand
@@ -73,6 +97,16 @@ public class MainPageViewModel {
 		{	
 			Clients.showNotification(selectedFragment.toString() + " selected");
 		}
+	}
+	
+	@GlobalCommand
+	@NotifyChange("*")
+	public void reloadTree(@BindingParam("model") DraggableTreeModel componentModel, 
+						   @BindingParam("selectedElement") DraggableTreeCmsElement componentSelectedElement)
+		{
+			model=componentModel;
+			//selectedElement=componentSelectedElement;
+		
 	}
 	
 	@Command

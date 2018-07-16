@@ -3,7 +3,22 @@
 			title="Simple DOM Generator" border="normal"
 			apply="org.zkoss.bind.BindComposer"
 			viewModel = "@id('vm') @init('zkVelocityDomLayout.zkVelocityDomlayout.MainPageViewModel')"
-	>
+	>	
+		   <style>
+      		  .redButton, .redButton:hover, .redButton:focus{
+            	background-color: red;
+       		   }
+   		   .greenButton, .greenButton:hover, .greenButton:focus{
+            	background-color: green;
+       		   }
+           	   .blueButton, .blueButton:hover, .blueButton:focus{
+            	background-color: blue;
+       		   }
+       		   .yellowButton, .yellowButton:hover, .yellowButton:focus{
+            	background-color: yellow;
+       		   }
+    		</style>
+    
 		<borderlayout width="100%" height="700px">
 			<north border="0">
 				<div>
@@ -36,26 +51,30 @@
 										
  										</hlayout>
 
+	    							Node ID:
+	    							<textbox value="@bind(vmPop.fragmentId)"
+	    								width="100%">
+	    							</textbox>
 	    							Title:
-	    							<textbox value="@bind(vmPop.title)"
+	    							<textbox value="@bind(vmPop.contentString)"
 	    								width="100%">
 	    							</textbox>
-	    							Subtitle:
-	    							<textbox value="@bind(vmPop.subtitle)"
-	    								width="100%">
-	    							</textbox>
-	     							Comment:
-	    								<textbox value="@bind(vmPop.text)"
-	    									width="100%" height="200px">
-	    								</textbox>
-	    								
+	     							Color:
+	     							
+		     						<div align="center"> 
+		     							<button sclass="redButton" label="Red" onClick="@command('saveColor', colorAttribute='red')" />
+										<button sclass="blueButton" label="Blue" onClick="@command('saveColor', colorAttribute='blue')"/>
+										<button sclass="greenButton" label="Green" onClick="@command('saveColor', colorAttribute='green')" />
+										<button sclass="yellowButton" label="Yellow" onClick="@command('saveColor', colorAttribute='yellow')" />
+									</div>
+								
 	    							<div align="center">
-	    								<button label="Generate Page"
-	    									onClick="@command('generatePage')" width="30%" />
-	    								<button label="Add node"
-	    									onClick="@global-command('addNode', nodeTitle=vmPop.title)" width="30%"/>
+	    								<button label="Add component"
+	    									onClick="@command('addComponent', root=vm.root, model=vm.model, selectedElement=vm.selectedElement, fragmentType=vmPop.fragmentTypeDef)" width="30%" />
 	    								<button label="Back"
 	    									onClick='popupWindow.setVisible(false);' width="30%"/>
+	    								<button label="Reload tree"
+	    									onClick="@global-command('reloadTree', model=vmPop.componentModel, selectedElement=vmPop.componentSelectedElement)" width="30%"/>
 	    							</div>
 	    						</vlayout>
  							</window>	
