@@ -4,15 +4,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FragmentList {
-	static List<String> fragmentList = new ArrayList<String>();
+	static List<FragmentType> fragmentList = new ArrayList<FragmentType>();
 	
 	static{
 		for(FragmentType fragmentName : FragmentType.values()) {	
-			fragmentList.add(fragmentName.toString());
+			fragmentList.add(fragmentName);
 		}
 	}
 	
-	public static List<String> getFragmentList() {
+	public static List<FragmentType> getFragmentList() {
 		return fragmentList;
 	} 
 

@@ -1,10 +1,13 @@
 <?page title="Simple DOM Generator"?>
 	<window id="mainWindow"
+			sclass="mainWindow"
 			title="Simple DOM Generator" border="normal"
 			apply="org.zkoss.bind.BindComposer"
 			viewModel = "@id('vm') @init('zkVelocityDomLayout.zkVelocityDomlayout.MainPageViewModel')"
+			height="100%"
 	>	
 		   <style>
+
       		  .redButton, .redButton:hover, .redButton:focus{
             	background-color: red;
        		   }
@@ -19,65 +22,122 @@
        		   }
     		</style>
     
-		<borderlayout width="100%" height="700px">
+		<borderlayout width="100%" height="100%" >
 			<north border="0">
 				<div>
 					Welcome to this simple DOM Generator	
 				</div>
 				
 			</north>
-			<west width="20%" border="0">
+			<west width="20%" border="0" autoscroll="true">
 				<div>
 					<draggableTree model="@bind(vm.model)" selectedElement="@save(vm.selectedElement)"></draggableTree>
 				
+<!-- Add Window -->
+					<window id="addPopupWindow" sclass="popUpWindows"
+						title="Add PopUp" width="50%" height="75%"
+						contentStyle="overflow:auto;" mode="modal"
+						visible="@load(vmPop.addPopupVisibility)"
+						apply="org.zkoss.bind.BindComposer"
+						viewModel="@id('vmPop') @init('zkVelocityDomLayout.zkVelocityDomlayout.TestComponentViewModel')">
+						<vlayout>
+							<hlayout>
+								<label value="Add a component"></label>
 
-							<window id="popupWindow" title="Add PopUp" width="50%" height="75%" 
-									contentStyle="overflow:auto;"
-	    							mode="modal" visible="false"
-	    							apply="org.zkoss.bind.BindComposer"
-	    							viewModel = "@id('vmPop') @init('zkVelocityDomLayout.zkVelocityDomlayout.TestComponentViewModel')"
-	    					>
- 								<vlayout>
-  										<hlayout>
- 											<label value="Add a component"></label>
- 										
- 											<listbox model="@load(vm.fragmentList)" width="100%" mold="select"
- 													 selectedItem="@save(vm.selectedFragment)"
- 											>
+								<listbox
+									model="@load(vmPop.fragmentList)" mold="select"
+									selectedItem="@bind(vmPop.selectedFragment)" rows="1"
+									width="100%">
+								</listbox>
 
-	 										</listbox>
-	 										
-											<button label="OK" onClick="@global-command('showSelectedFragment')"></button>
-										
- 										</hlayout>
+								<button label="OK"
+									onClick="@command('showSelectedFragment')">
+								</button>
 
-	    							Node ID:
-	    							<textbox value="@bind(vmPop.fragmentId)"
-	    								width="100%">
-	    							</textbox>
-	    							Title:
-	    							<textbox value="@bind(vmPop.contentString)"
-	    								width="100%">
-	    							</textbox>
-	     							Color:
-	     							
-		     						<div align="center"> 
-		     							<button sclass="redButton" label="Red" onClick="@command('saveColor', colorAttribute='red')" />
-										<button sclass="blueButton" label="Blue" onClick="@command('saveColor', colorAttribute='blue')"/>
-										<button sclass="greenButton" label="Green" onClick="@command('saveColor', colorAttribute='green')" />
-										<button sclass="yellowButton" label="Yellow" onClick="@command('saveColor', colorAttribute='yellow')" />
-									</div>
-								
-	    							<div align="center">
-	    								<button label="Add component"
-	    									onClick="@command('addComponent', root=vm.root, model=vm.model, selectedElement=vm.selectedElement, fragmentType=vmPop.fragmentTypeDef)" width="30%" />
-	    								<button label="Back"
-	    									onClick='popupWindow.setVisible(false);' width="30%"/>
-	    								<button label="Reload tree"
-	    									onClick="@global-command('reloadTree', model=vmPop.componentModel, selectedElement=vmPop.componentSelectedElement)" width="30%"/>
-	    							</div>
-	    						</vlayout>
- 							</window>	
+							</hlayout>
+
+							Node ID:
+							<textbox value="@bind(vmPop.fragmentId)"
+								width="100%">
+							</textbox>
+							Title:
+							<textbox value="@bind(vmPop.contentString)"
+								width="100%">
+							</textbox>
+							Color:
+
+							<div align="center">
+								<button sclass="redButton" label="Red"
+									onClick="@command('saveColor', colorAttribute='red')" />
+								<button sclass="blueButton" label="Blue"
+									onClick="@command('saveColor', colorAttribute='blue')" />
+								<button sclass="greenButton"
+									label="Green"
+									onClick="@command('saveColor', colorAttribute='green')" />
+								<button sclass="yellowButton"
+									label="Yellow"
+									onClick="@command('saveColor', colorAttribute='yellow')" />
+							</div>
+
+							<div align="center">
+								<button label="Add component"
+									onClick="@command('addComponent', root=vm.root, selectedElement=vm.selectedElement, fragmentType=vmPop.selectedFragment)"
+									width="30%" />
+								<button label="Back"
+									onClick="@command('resetPopUpSelectionAndBack')" width="30%" />
+							</div>
+						</vlayout>
+					</window>
+
+					<!--Modify Window -->
+					<window id="modifyPopupWindow" sclass="popUpWindows"
+						title="Modify PopUp" width="50%" height="75%"
+						contentStyle="overflow:auto;" mode="modal"
+						visible="@load(vmPop.modifyPopupVisibility)"
+						apply="org.zkoss.bind.BindComposer"
+						viewModel="@id('vmPop') @init('zkVelocityDomLayout.zkVelocityDomlayout.TestComponentViewModel')">
+						<vlayout>
+							<hlayout>
+								<label value="Type component: "></label>
+								<label
+									value="@load(vm.selectedElement.fragmentTypeDef)">
+								</label>
+							</hlayout>
+
+							Node ID:
+							<textbox
+								value="@load(vm.selectedElement.attributeDataMap.id) @save(vmPop.fragmentId)"
+								width="100%">
+							</textbox>
+							Title:
+							<textbox
+								value="@load(vm.selectedElement.attributeDataMap.contentString) @save(vmPop.contentString)"
+								width="100%">
+							</textbox>
+							Color:
+
+							<div align="center">
+								<button sclass="redButton" label="Red"
+									onClick="@command('saveColor', colorAttribute='red')" />
+								<button sclass="blueButton" label="Blue"
+									onClick="@command('saveColor', colorAttribute='blue')" />
+								<button sclass="greenButton"
+									label="Green"
+									onClick="@command('saveColor', colorAttribute='green')" />
+								<button sclass="yellowButton"
+									label="Yellow"
+									onClick="@command('saveColor', colorAttribute='yellow')" />
+							</div>
+
+							<div align="center">
+								<button label="Update"
+									onClick="@command('updateComponent', selectedElement=vm.selectedElement)"
+									width="30%" />
+								<button label="Back"
+									onClick="@command('resetPopUpSelectionAndBack')" width="30%" />
+							</div>
+						</vlayout>
+					</window>
 				</div>
 			</west>
 			
@@ -91,9 +151,9 @@
 			</south>
 			<center border="0">
 					<div align="center">
-						<button iconSclass="z-icon-plus" onClick="popupWindow.setVisible(true)"/>
-						<button iconSclass="z-icon-minus" onClick="@command('deleteNode')"/>
-						<button iconSclass="z-icon-gear"/>
+						<button iconSclass="z-icon-plus" onClick="addPopupWindow.setVisible(true)" disabled="@load(empty vm.selectedElement)"/>
+						<button iconSclass="z-icon-minus" onClick="@command('deleteNode')" disabled="@load(empty vm.selectedElement or vm.selectedElement eq vm.root)"/>
+						<button iconSclass="z-icon-gear" onClick="modifyPopupWindow.setVisible(true)"  disabled="@load(empty vm.selectedElement)"/>
 					</div>		
 			</center>
 		</borderlayout>
