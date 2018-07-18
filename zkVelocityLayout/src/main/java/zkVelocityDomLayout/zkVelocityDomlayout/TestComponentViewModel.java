@@ -28,28 +28,20 @@ import zkVelocityLayout.FragmentPackage.FragmentList;
 
 public class TestComponentViewModel {
 	
-	private FileWriter out;
-	private FragmentType fragmentTypeDef;
-	private Map<String,String> attributeDataMap;
-	
-	private DraggableTreeCmsElement componentSelectedElement;
-	private ArrayList<String> componentIdList = new ArrayList<String>();
+
 	
 	private String fragmentId;
 	private String contentString;
 	private String colorAttribute;
-	private List<FragmentType> fragmentList;
+
+	
 	private FragmentType selectedFragment;
 	
-	private boolean addPopupVisibility= false;
-	private boolean modifyPopupVisibility= false;
+
 	
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//////GETTERS AND SETTERS MASK
-	public List<FragmentType> getFragmentList() {
-		return FragmentList.getFragmentList();
-	}
-	
+
 	public FragmentType getSelectedFragment() {
 		return selectedFragment;
 	}
@@ -58,21 +50,7 @@ public class TestComponentViewModel {
 		this.selectedFragment = selectedFragment;
 	}
 	
-	public boolean isModifyPopupVisibility() {
-		return modifyPopupVisibility;
-	}
 
-	public void setModifyPopupVisibility(boolean modifyPopupVisibility) {
-		this.modifyPopupVisibility = modifyPopupVisibility;
-	}
-	
-	public boolean isAddPopupVisibility() {
-		return addPopupVisibility;
-	}
-
-	public void setAddPopupVisibility(boolean addPopupVisibility) {
-		this.addPopupVisibility = addPopupVisibility;
-	}
 	
 	public String getFragmentId() {
 		return fragmentId;
@@ -101,69 +79,10 @@ public class TestComponentViewModel {
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//////GETTERS AND SETTERS DRAGGABLETREE EXTENSION
 
-	public FragmentType getFragmentTypeDef() {
-		return fragmentTypeDef;
-	}
 
-	public void setFragmentTypeDef(FragmentType fragmentTypeDef) {
-		this.fragmentTypeDef = fragmentTypeDef;
-	}
-
-	public Map<String, String> getAttributeDataMap() {
-		return attributeDataMap;
-	}
-
-	public void setAttributeDataMap(Map<String, String> attributeDataMap) {
-		this.attributeDataMap = attributeDataMap;
-	}
-	
-	public DraggableTreeCmsElement getComponentSelectedElement() {
-		return componentSelectedElement;
-	}
-
-	public void setComponentSelectedElement(DraggableTreeCmsElement componentSelectedElement) {
-		this.componentSelectedElement = componentSelectedElement;
-	}
-	
-	public ArrayList<String> getComponentIdList() {
-		return componentIdList;
-	}
-
-	public void setComponentIdList(ArrayList<String> componentIdList) {
-		this.componentIdList = componentIdList;
-	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//////COMMANDS
-	@Command
-	@NotifyChange("*")
-	public void addComponent(@BindingParam("selectedElement") DraggableTreeCmsElement mainPageselectedElement,
-							 @BindingParam("idList") ArrayList<String> mainPageIdList) throws Exception{
-		///////////////////////////////////////////////////////////////////////////////////////////////////////////
-		////// CHECK DATA
-		String errString=null;
-		errString=checkFields(mainPageIdList, selectedFragment, fragmentId, contentString, colorAttribute);
-		if ((errString.equals(""))==true) {
-			attributeDataMap=generateFragment();
-			///////////////////////////////////////////////////////////////////////////////////////////////////////////
-			////// INITIALIZING COMPONENT ELEMENTS WITH MAIN PAGE ELEMENTS
-			componentIdList=mainPageIdList;
-			componentSelectedElement = mainPageselectedElement;
-			///////////////////////////////////////////////////////////////////////////////////////////////////////////
-			////// NODE ADDING
-			new DraggableTreeCmsElement(componentSelectedElement, fragmentId, selectedFragment, attributeDataMap);
-			componentIdList.add(fragmentId);
-			Map<String, Object> args = new HashMap<String, Object>();
-			args.put("selectedElement", componentSelectedElement);
-			args.put("idList", componentIdList);
-			BindUtils.postGlobalCommand(null, null, "reloadMainPageTree", args);
-			// RESET WINDOW SELECTIONS OR CONTENT
-			resetPopUpSelectionAndBack();
-		}else {
-			addPopupVisibility=true;
-			Clients.showNotification(errString);	
-		}
-	}
-    
+	
 	@Command
 	@NotifyChange("*")
 	public void updateComponent(@BindingParam("selectedElement") DraggableTreeCmsElement mainPageselectedElement,
@@ -192,22 +111,8 @@ public class TestComponentViewModel {
 			Clients.showNotification(errString);
 		}
 	}
-	
-	@Command
-	@NotifyChange ("colorAttribute")
-	public void saveColor(@BindingParam ("colorAttribute") String color) {
-		this.colorAttribute=color;
-	}
-	
-	@Command
-	@NotifyChange("*")
-	public void resetPopUpSelectionAndBack() {
-        fragmentId=null;
-    	contentString=null;
-    	colorAttribute=null;
-       	selectedFragment=null;
-       	addPopupVisibility=false;
-	}
+		
+
 	
 	@Command
 	public void showSelectedFragment() {
@@ -256,31 +161,7 @@ public class TestComponentViewModel {
 		return attributeDataMap;
 	}
 	
-	private String checkFields(ArrayList<String> idList, FragmentType selectedType, String fragmentId, String contentString, String colorAttribute) {
-		String errMsgFun = "";
-		
-		if(selectedType==null) {
-			errMsgFun += "Component \n";
-		}
-		if(fragmentId==null || (fragmentId.equals(""))==true) {
-			
-			errMsgFun += "Node Id \n";
-		}
-		if(contentString==null || (contentString.equals(""))==true) {
-			errMsgFun += "Title \n";
-		}
-		if(colorAttribute==null || (colorAttribute.equals(""))==true) {
-			errMsgFun += "Color Attribute \n";
-		}
-		if((errMsgFun.equals(""))==false) {
-			errMsgFun += " empty. Please insert all the data. \n";
-		}
-		if(idList.contains(fragmentId)){
-			errMsgFun += "Node Id already exists. Please change it";
-		}
-		
-		return errMsgFun;
-	}
+
 	
 	private String checkFields(DraggableTreeCmsElement selectedElement, ArrayList<String> idList, String fragmentId, String contentString, String colorAttribute) {
 		String errMsgFun = "";
