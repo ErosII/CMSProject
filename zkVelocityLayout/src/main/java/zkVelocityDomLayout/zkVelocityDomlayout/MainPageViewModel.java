@@ -3,6 +3,7 @@ package zkVelocityDomLayout.zkVelocityDomlayout;
 
 import org.zkoss.bind.annotation.NotifyChange;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,7 +20,8 @@ public class MainPageViewModel {
 	private DraggableTreeCmsElement root;
 	private DraggableTreeModel model;
 	private DraggableTreeCmsElement selectedElement;
-
+	
+	private ArrayList<String> idList = new ArrayList<String>();
 
 	public MainPageViewModel(){
 	
@@ -54,12 +56,23 @@ public class MainPageViewModel {
 		this.root = root;
 	}
 	
+	public ArrayList<String> getIdList() {
+		return idList;
+	}
+
+	public void setIdList(ArrayList<String> idList) {
+		this.idList = idList;
+	}
+
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//////COMMANDS
 	@GlobalCommand
 	@NotifyChange("*")
-	public void reloadMainPageTree(@BindingParam("selectedElement") DraggableTreeCmsElement componentSelectedElement){
+	public void reloadMainPageTree(@BindingParam("selectedElement") DraggableTreeCmsElement componentSelectedElement,
+								   @BindingParam("idList") ArrayList<String> componentIdList){
 		selectedElement = componentSelectedElement;
+		root.recomputeSpacersRecursive();
+		idList=componentIdList;
 	}
 		
 	@Command
@@ -67,6 +80,6 @@ public class MainPageViewModel {
 	public void deleteNode(){
 		DraggableTreeComponent.removeFromParent(selectedElement);
 		root.recomputeSpacersRecursive();
-
+		idList.remove(selectedElement.getAttributeDataMap().get("id"));
 	}
 }

@@ -81,7 +81,7 @@
 
 							<div align="center">
 								<button label="Add component"
-									onClick="@command('addComponent', root=vm.root, selectedElement=vm.selectedElement, fragmentType=vmPop.selectedFragment)"
+									onClick="@command('addComponent', selectedElement=vm.selectedElement, idList=vm.idList)"
 									width="30%" />
 								<button label="Back"
 									onClick="@command('resetPopUpSelectionAndBack')" width="30%" />
@@ -131,7 +131,7 @@
 
 							<div align="center">
 								<button label="Update"
-									onClick="@command('updateComponent', selectedElement=vm.selectedElement)"
+									onClick="@command('updateComponent', selectedElement=vm.selectedElement, idList=vm.idList)"
 									width="30%" />
 								<button label="Back"
 									onClick="@command('resetPopUpSelectionAndBack')" width="30%" />

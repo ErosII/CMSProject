@@ -1,8 +1,9 @@
 package zkVelocityDomLayout.zkVelocityDomlayout;
 
 import java.io.FileWriter;
-import java.io.IOException;
+
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,9 +32,8 @@ public class TestComponentViewModel {
 	private FragmentType fragmentTypeDef;
 	private Map<String,String> attributeDataMap;
 	
-	private DraggableTreeCmsElement componentRoot;
-	private DraggableTreeModel componentModel;
 	private DraggableTreeCmsElement componentSelectedElement;
+	private ArrayList<String> componentIdList = new ArrayList<String>();
 	
 	private String fragmentId;
 	private String contentString;
@@ -41,8 +41,8 @@ public class TestComponentViewModel {
 	private List<FragmentType> fragmentList;
 	private FragmentType selectedFragment;
 	
-	private boolean addPopupVisibility = false;
-	private boolean modifyPopupVisibility = false;
+	private boolean addPopupVisibility= false;
+	private boolean modifyPopupVisibility= false;
 	
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//////GETTERS AND SETTERS MASK
@@ -117,22 +117,6 @@ public class TestComponentViewModel {
 		this.attributeDataMap = attributeDataMap;
 	}
 	
-	public DraggableTreeCmsElement getComponentTreeElement() {
-		return componentRoot;
-	}
-
-	public void setComponentTreeElement(DraggableTreeCmsElement componentTreeElement) {
-		this.componentRoot = componentTreeElement;
-	}
-
-	public DraggableTreeModel getComponentModel() {
-		return componentModel;
-	}
-
-	public void setComponentModel(DraggableTreeModel componentModel) {
-		this.componentModel = componentModel;
-	}
-	
 	public DraggableTreeCmsElement getComponentSelectedElement() {
 		return componentSelectedElement;
 	}
@@ -140,56 +124,73 @@ public class TestComponentViewModel {
 	public void setComponentSelectedElement(DraggableTreeCmsElement componentSelectedElement) {
 		this.componentSelectedElement = componentSelectedElement;
 	}
+	
+	public ArrayList<String> getComponentIdList() {
+		return componentIdList;
+	}
+
+	public void setComponentIdList(ArrayList<String> componentIdList) {
+		this.componentIdList = componentIdList;
+	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//////COMMANDS
 	@Command
+	@NotifyChange("*")
 	public void addComponent(@BindingParam("selectedElement") DraggableTreeCmsElement mainPageselectedElement,
-							 @BindingParam("root") DraggableTreeCmsElement mainPageRoot,
-							 @BindingParam("fragmentType") FragmentType componentType) throws Exception{
-		
+							 @BindingParam("idList") ArrayList<String> mainPageIdList) throws Exception{
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////
 		////// CHECK DATA
 		String errString=null;
-		errString=checkFields(componentType, fragmentId, contentString, colorAttribute);
+		errString=checkFields(mainPageIdList, selectedFragment, fragmentId, contentString, colorAttribute);
 		if ((errString.equals(""))==true) {
 			attributeDataMap=generateFragment();
 			///////////////////////////////////////////////////////////////////////////////////////////////////////////
 			////// INITIALIZING COMPONENT ELEMENTS WITH MAIN PAGE ELEMENTS
-			componentRoot = mainPageRoot;
+			componentIdList=mainPageIdList;
 			componentSelectedElement = mainPageselectedElement;
 			///////////////////////////////////////////////////////////////////////////////////////////////////////////
 			////// NODE ADDING
-			new DraggableTreeCmsElement(componentSelectedElement, fragmentId, componentType, attributeDataMap);
-			componentRoot.recomputeSpacersRecursive();
+			new DraggableTreeCmsElement(componentSelectedElement, fragmentId, selectedFragment, attributeDataMap);
+			componentIdList.add(fragmentId);
 			Map<String, Object> args = new HashMap<String, Object>();
 			args.put("selectedElement", componentSelectedElement);
+			args.put("idList", componentIdList);
 			BindUtils.postGlobalCommand(null, null, "reloadMainPageTree", args);
 			// RESET WINDOW SELECTIONS OR CONTENT
 			resetPopUpSelectionAndBack();
 		}else {
-			Clients.showNotification(errString + " empty. Please insert all the data.");	
+			addPopupVisibility=true;
+			Clients.showNotification(errString);	
 		}
 	}
     
 	@Command
-	public void updateComponent(@BindingParam("selectedElement") DraggableTreeCmsElement mainPageselectedElement) throws Exception{
+	@NotifyChange("*")
+	public void updateComponent(@BindingParam("selectedElement") DraggableTreeCmsElement mainPageselectedElement,
+								@BindingParam("idList") ArrayList<String> mainPageIdList) throws Exception{
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////
 		//////CHECK DATA
-		String errString=checkFields(fragmentId, contentString, colorAttribute);
-		if ((errString.equals(""))) {
+		String errString=checkFields(mainPageselectedElement, mainPageIdList, fragmentId, contentString, colorAttribute);
+		if ((errString.equals(""))==true){
 			attributeDataMap=generateFragment();
 			///////////////////////////////////////////////////////////////////////////////////////////////////////////
 			////// INITIALIZING COMPONENT ELEMENTS WITH MAIN PAGE ELEMENTS
 			componentSelectedElement = mainPageselectedElement;
+			componentIdList=mainPageIdList;
+			componentIdList.remove(componentSelectedElement.getAttributeDataMap().get("id"));
 			componentSelectedElement.setAttributeDataMap(attributeDataMap);
 			componentSelectedElement.setDescription(fragmentId);
+			componentIdList.add(fragmentId);
 			Map<String, Object> args = new HashMap<String, Object>();
 			args.put("selectedElement", componentSelectedElement);
+			args.put("idList", componentIdList);
 			BindUtils.postGlobalCommand(null, null, "reloadMainPageTree", args);
 			// RESET WINDOW SELECTIONS OR CONTENT
 			resetPopUpSelectionAndBack();
 		}else {
-			Clients.showNotification(errString + " empty. Please insert all the data.");	
+			addPopupVisibility=true;
+			Clients.showNotification(errString);
+
 		}
 	}
 	
@@ -200,13 +201,13 @@ public class TestComponentViewModel {
 	}
 	
 	@Command
-	@NotifyChange ("*")
+	@NotifyChange("*")
 	public void resetPopUpSelectionAndBack() {
-		addPopupVisibility=false;
         fragmentId=null;
     	contentString=null;
     	colorAttribute=null;
        	selectedFragment=null;
+       	addPopupVisibility=false;
 	}
 	
 	@Command
@@ -256,14 +257,12 @@ public class TestComponentViewModel {
 		return attributeDataMap;
 	}
 	
-	private String checkFields(FragmentType selectedType, String fragmentId, String contentString, String colorAttribute) {
-		
+	private String checkFields(ArrayList<String> idList, FragmentType selectedType, String fragmentId, String contentString, String colorAttribute) {
 		String errMsgFun = "";
 		
 		if(selectedType==null) {
 			errMsgFun += "Component \n";
 		}
-		
 		if(fragmentId==null || (fragmentId.equals(""))==true) {
 			
 			errMsgFun += "Node Id \n";
@@ -274,11 +273,17 @@ public class TestComponentViewModel {
 		if(colorAttribute==null || (colorAttribute.equals(""))==true) {
 			errMsgFun += "Color Attribute \n";
 		}
+		if((errMsgFun.equals(""))==false) {
+			errMsgFun += " empty. Please insert all the data. \n";
+		}
+		if(idList.contains(fragmentId)){
+			errMsgFun += "Node Id already exists. Please change it";
+		}
+		
 		return errMsgFun;
 	}
 	
-	private String checkFields(String fragmentId, String contentString, String colorAttribute) {
-		
+	private String checkFields(DraggableTreeCmsElement selectedElement, ArrayList<String> idList, String fragmentId, String contentString, String colorAttribute) {
 		String errMsgFun = "";
 		
 		if(fragmentId==null || (fragmentId.equals(""))==true) {
@@ -290,6 +295,12 @@ public class TestComponentViewModel {
 		}
 		if(colorAttribute==null || (colorAttribute.equals(""))==true) {
 			errMsgFun += "Color Attribute \n";
+		}
+		if((errMsgFun.equals(""))==false) {
+			errMsgFun += " empty. Please insert all the data. \n";
+		}
+		if(fragmentId!= selectedElement.getAttributeDataMap().get("id") && idList.contains(fragmentId)==true) {
+			errMsgFun += "Node Id already exists. Change it please. \n";
 		}
 		return errMsgFun;
 	}
