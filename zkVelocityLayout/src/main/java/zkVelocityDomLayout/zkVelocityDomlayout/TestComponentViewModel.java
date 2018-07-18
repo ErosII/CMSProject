@@ -143,42 +143,54 @@ public class TestComponentViewModel {
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//////COMMANDS
 	@Command
-	@NotifyChange("*")
 	public void addComponent(@BindingParam("selectedElement") DraggableTreeCmsElement mainPageselectedElement,
 							 @BindingParam("root") DraggableTreeCmsElement mainPageRoot,
 							 @BindingParam("fragmentType") FragmentType componentType) throws Exception{
 		
-		attributeDataMap=generateFragment();
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////
-		////// INITIALIZING COMPONENT ELEMENTS WITH MAIN PAGE ELEMENTS
-		componentRoot = mainPageRoot;
-		componentSelectedElement = mainPageselectedElement;
-		///////////////////////////////////////////////////////////////////////////////////////////////////////////
-		////// NODE ADDING
-		new DraggableTreeCmsElement(componentSelectedElement, fragmentId, componentType, attributeDataMap);
-		componentRoot.recomputeSpacersRecursive();
-		Map<String, Object> args = new HashMap<String, Object>();
-		args.put("selectedElement", componentSelectedElement);
-		BindUtils.postGlobalCommand(null, null, "reloadMainPageTree", args);
-		// RESET WINDOW SELECTIONS OR CONTENT
-		resetPopUpSelectionAndBack();
-
+		////// CHECK DATA
+		String errString=null;
+		errString=checkFields(componentType, fragmentId, contentString, colorAttribute);
+		if ((errString.equals(""))==true) {
+			attributeDataMap=generateFragment();
+			///////////////////////////////////////////////////////////////////////////////////////////////////////////
+			////// INITIALIZING COMPONENT ELEMENTS WITH MAIN PAGE ELEMENTS
+			componentRoot = mainPageRoot;
+			componentSelectedElement = mainPageselectedElement;
+			///////////////////////////////////////////////////////////////////////////////////////////////////////////
+			////// NODE ADDING
+			new DraggableTreeCmsElement(componentSelectedElement, fragmentId, componentType, attributeDataMap);
+			componentRoot.recomputeSpacersRecursive();
+			Map<String, Object> args = new HashMap<String, Object>();
+			args.put("selectedElement", componentSelectedElement);
+			BindUtils.postGlobalCommand(null, null, "reloadMainPageTree", args);
+			// RESET WINDOW SELECTIONS OR CONTENT
+			resetPopUpSelectionAndBack();
+		}else {
+			Clients.showNotification(errString + " empty. Please insert all the data.");	
+		}
 	}
     
 	@Command
-	@NotifyChange("*")
 	public void updateComponent(@BindingParam("selectedElement") DraggableTreeCmsElement mainPageselectedElement) throws Exception{
-		
-		attributeDataMap=generateFragment();
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////
-		////// INITIALIZING COMPONENT ELEMENTS WITH MAIN PAGE ELEMENTS
-		componentSelectedElement = mainPageselectedElement;
-		componentSelectedElement.setAttributeDataMap(attributeDataMap);
-		Map<String, Object> args = new HashMap<String, Object>();
-		args.put("selectedElement", componentSelectedElement);
-		BindUtils.postGlobalCommand(null, null, "reloadMainPageTree", args);
-		// RESET WINDOW SELECTIONS OR CONTENT
-		resetPopUpSelectionAndBack();
+		//////CHECK DATA
+		String errString=checkFields(fragmentId, contentString, colorAttribute);
+		if ((errString.equals(""))) {
+			attributeDataMap=generateFragment();
+			///////////////////////////////////////////////////////////////////////////////////////////////////////////
+			////// INITIALIZING COMPONENT ELEMENTS WITH MAIN PAGE ELEMENTS
+			componentSelectedElement = mainPageselectedElement;
+			componentSelectedElement.setAttributeDataMap(attributeDataMap);
+			componentSelectedElement.setDescription(fragmentId);
+			Map<String, Object> args = new HashMap<String, Object>();
+			args.put("selectedElement", componentSelectedElement);
+			BindUtils.postGlobalCommand(null, null, "reloadMainPageTree", args);
+			// RESET WINDOW SELECTIONS OR CONTENT
+			resetPopUpSelectionAndBack();
+		}else {
+			Clients.showNotification(errString + " empty. Please insert all the data.");	
+		}
 	}
 	
 	@Command
@@ -210,7 +222,8 @@ public class TestComponentViewModel {
 	
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
 	////// PRIVATE UTILITIES
-	public Map<String, String> generateFragment() throws Exception {
+	
+	private Map<String, String> generateFragment() throws Exception {
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////
 		////// ADDING ATTRIBUTES TO HASHMAP
 		Map<String, String> attributeDataMap = new HashMap<String, String>();
@@ -242,4 +255,43 @@ public class TestComponentViewModel {
 		System.out.println(writer);
 		return attributeDataMap;
 	}
+	
+	private String checkFields(FragmentType selectedType, String fragmentId, String contentString, String colorAttribute) {
+		
+		String errMsgFun = "";
+		
+		if(selectedType==null) {
+			errMsgFun += "Component \n";
+		}
+		
+		if(fragmentId==null || (fragmentId.equals(""))==true) {
+			
+			errMsgFun += "Node Id \n";
+		}
+		if(contentString==null || (contentString.equals(""))==true) {
+			errMsgFun += "Title \n";
+		}
+		if(colorAttribute==null || (colorAttribute.equals(""))==true) {
+			errMsgFun += "Color Attribute \n";
+		}
+		return errMsgFun;
+	}
+	
+	private String checkFields(String fragmentId, String contentString, String colorAttribute) {
+		
+		String errMsgFun = "";
+		
+		if(fragmentId==null || (fragmentId.equals(""))==true) {
+			
+			errMsgFun += "Node Id \n";
+		}
+		if(contentString==null || (contentString.equals(""))==true) {
+			errMsgFun += "Title \n";
+		}
+		if(colorAttribute==null || (colorAttribute.equals(""))==true) {
+			errMsgFun += "Color Attribute \n";
+		}
+		return errMsgFun;
+	}
+
 }

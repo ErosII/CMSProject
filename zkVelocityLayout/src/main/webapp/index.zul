@@ -106,12 +106,12 @@
 
 							Node ID:
 							<textbox
-								value="@load(vm.selectedElement.attributeDataMap.id) @save(vmPop.fragmentId)"
+								value="@load(vm.selectedElement.attributeDataMap.id) @save(vmPop.fragmentId, before='updateComponent')"
 								width="100%">
 							</textbox>
 							Title:
 							<textbox
-								value="@load(vm.selectedElement.attributeDataMap.contentString) @save(vmPop.contentString)"
+								value="@load(vm.selectedElement.attributeDataMap.contentString) @save(vmPop.contentString, before='updateComponent')"
 								width="100%">
 							</textbox>
 							Color:
@@ -142,9 +142,10 @@
 			</west>
 			
 			<east width="65%">
-				
-					<iframe src="/templateFolder/mod.html" hflex="1"></iframe>
-			
+				<vlayout>
+					<iframe id="iframeToReload" src="/templateFolder/mod.html" hflex="1"></iframe>
+					<button label="Refresh" onClick="iframeToReload.invalidate()"/>
+				</vlayout>
 			</east>
 			<south border="0">
 				<div align="center">Powered by ZK </div>	

@@ -25,7 +25,7 @@ public class MainPageViewModel {
 	
 		Map<String, String> rootMap = new HashMap<String, String>();
 		rootMap.put("id", "root");
-		root= new DraggableTreeCmsElement(null, "Sample Page", null, rootMap);
+		root= new DraggableTreeCmsElement(null, "root", null, rootMap);
 	}
 	
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
