@@ -190,7 +190,6 @@ public class TestComponentViewModel {
 		}else {
 			addPopupVisibility=true;
 			Clients.showNotification(errString);
-
 		}
 	}
 	
