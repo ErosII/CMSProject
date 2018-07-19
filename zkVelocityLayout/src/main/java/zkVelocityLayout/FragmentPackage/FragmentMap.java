@@ -29,14 +29,23 @@ public class FragmentMap {
 			
 			fragmentList.add(fragmentName);
 			
-			if(fragmentName.equals(FragmentType.Title))
+			if(fragmentName.equals(FragmentType.Title)) {
+				System.out.println("Aggiungo titolo");
 				fragmentMap.put(fragmentName, titleMap);
+			}
+		
 			
-			if(fragmentName.equals(FragmentType.Subtitle))
+			if(fragmentName.equals(FragmentType.Subtitle)) {
+				System.out.println("Aggiungo sottotitolo");
 				fragmentMap.put(fragmentName, subtitleMap);
-			
-			if(fragmentName.equals(FragmentType.Paragraph))
+			}
+				
+			if(fragmentName.equals(FragmentType.Paragraph)) {
+				System.out.println("Aggiungo paragrafo");
 				fragmentMap.put(fragmentName, paragraphMap);
+				
+			}
+			
 		}
 	}
 	

@@ -111,58 +111,7 @@ public class TestComponentViewModel {
 			Clients.showNotification(errString);
 		}
 	}
-		
 
-	
-	@Command
-	public void showSelectedFragment() {
-		if (selectedFragment==null) {
-			Clients.showNotification("No selected element!");
-		}	
-		else
-		{	
-			Clients.showNotification(selectedFragment.toString() + " selected");
-		}
-	}
-	
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////
-	////// PRIVATE UTILITIES
-	
-	private Map<String, String> generateFragment() throws Exception {
-		///////////////////////////////////////////////////////////////////////////////////////////////////////////
-		////// ADDING ATTRIBUTES TO HASHMAP
-		Map<String, String> attributeDataMap = new HashMap<String, String>();
-		attributeDataMap.put("id", fragmentId);
-		attributeDataMap.put("contentString", contentString);
-		attributeDataMap.put("colorAttribute", colorAttribute);
-		///////////////////////////////////////////////////////////////////////////////////////////////////////////
-		////// SETTING UP VELOCITY
-		VelocityEngine engine = new VelocityEngine();
-		ServletContext sc = WebApps.getCurrent().getServletContext();
-		engine.setApplicationAttribute("javax.servlet.ServletContext", sc);
-		engine.setProperty("resource.loader", "webapp");
-		engine.setProperty("webapp.resource.loader.class", "org.apache.velocity.tools.view.WebappResourceLoader");
-		engine.setProperty("webapp.resource.loader.path", "/templateFolder/");
-		engine.init();
-		///////////////////////////////////////////////////////////////////////////////////////////////////////////
-		////// GETTING THE TEMPLATE AND USE IT
-		Template template = engine.getTemplate("template.vm");
-		VelocityContext vc = new VelocityContext();
-		vc.put("attributeDataMap", attributeDataMap);
-		StringWriter writer = new StringWriter();
-		template.merge(vc, writer);
-		///////////////////////////////////////////////////////////////////////////////////////////////////////////
-		////// SAVING OUTPUT
-		String path = System.getProperty("user.home");
-		out = new FileWriter(path + "/git/CMSProject/zkVelocityLayout/src/main/webapp/templateFolder/mod.html");
-		out.write(writer.toString());
-		out.close();
-		System.out.println(writer);
-		return attributeDataMap;
-	}
-	
-
-	
 	private String checkFields(DraggableTreeCmsElement selectedElement, ArrayList<String> idList, String fragmentId, String contentString, String colorAttribute) {
 		String errMsgFun = "";
 		

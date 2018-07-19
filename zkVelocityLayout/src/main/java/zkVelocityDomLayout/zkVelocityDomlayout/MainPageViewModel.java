@@ -4,13 +4,20 @@ package zkVelocityDomLayout.zkVelocityDomlayout;
 import org.zkoss.bind.annotation.NotifyChange;
 
 import java.io.FileWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.ServletContext;
+
+import org.apache.velocity.Template;
+import org.apache.velocity.VelocityContext;
+import org.apache.velocity.app.VelocityEngine;
 import org.zkoss.bind.annotation.BindingParam;
 import org.zkoss.bind.annotation.Command;
+import org.zkoss.zk.ui.WebApps;
 import org.zkoss.zk.ui.util.Clients;
 
 import biz.opengate.zkComponents.draggableTree.*;
@@ -40,7 +47,8 @@ public class MainPageViewModel {
 		attributeDataMap = new HashMap<String,String>();
 		Map<String, String> rootMap = new HashMap<String, String>();
 		rootMap.put("id", "root");
-		root= new DraggableTreeCmsElement(null, "root", null, rootMap);
+		root= new DraggableTreeCmsElement(null, "root", FragmentType.Title, rootMap);
+		fragmentMap = FragmentMap.getFragmentMap();
 	}
 	
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -48,15 +56,7 @@ public class MainPageViewModel {
 	public List<FragmentType> getFragmentList() {
 		return FragmentMap.getFragmentList();
 	}
-	
-	public void setFragmentMap(Map<FragmentType, HashMap<String, Boolean>> fragmentMap) {
-		this.fragmentMap = fragmentMap;
-	}
-
-	public Map<FragmentType, HashMap<String, Boolean>> getFragmentMap() {
-		return FragmentMap.getFragmentMap();
-	}
-	
+		
 	public DraggableTreeModel getModel() {
 		
 		if (model == null) {
@@ -142,84 +142,153 @@ public class MainPageViewModel {
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////
 		////// CHECK DATA
 		String errString=null;
+		errString=checkFields(idList, selectedFragment, attributeDataMap, fragmentMap.get(selectedFragment));
 		
-		System.out.println( fragmentMap.get(selectedFragment));
-		System.out.println( fragmentMap.get(selectedFragment).toString());
-		//errString=checkFields(idList, selectedFragment, attributeDataMap, fragmentMap.get(selectedFragment));
-//		if ((errString.equals(""))==true) {
-//			
-//			Clients.showNotification("Tutto OK");	
-//			
-////			attributeDataMap=generateFragment();
-////			///////////////////////////////////////////////////////////////////////////////////////////////////////////
-////			////// INITIALIZING COMPONENT ELEMENTS WITH MAIN PAGE ELEMENTS
-////			componentIdList=mainPageIdList;
-////			componentSelectedElement = mainPageselectedElement;
-////			///////////////////////////////////////////////////////////////////////////////////////////////////////////
-////			////// NODE ADDING
-////			new DraggableTreeCmsElement(componentSelectedElement, fragmentId, selectedFragment, attributeDataMap);
-////			componentIdList.add(fragmentId);
-////			Map<String, Object> args = new HashMap<String, Object>();
-////			args.put("selectedElement", componentSelectedElement);
-////			args.put("idList", componentIdList);
-////			BindUtils.postGlobalCommand(null, null, "reloadMainPageTree", args);
-////			// RESET WINDOW SELECTIONS OR CONTENT
-////			resetPopUpSelectionAndBack();
-//		}else {
-//			addPopupVisibility=true;
-//			Clients.showNotification(errString);	
-//		}
+		if ((errString.equals(""))==true) {
+			
+			generateFragment(attributeDataMap);
+			///////////////////////////////////////////////////////////////////////////////////////////////////////////
+			////// ADDING A NODE
+			System.out.println(attributeDataMap);
+			new DraggableTreeCmsElement(selectedElement, attributeDataMap.get("id") , selectedFragment, attributeDataMap);
+			idList.add(attributeDataMap.get("id"));
+			// RESET WINDOW SELECTIONS OR CONTENT
+			resetPopUpSelectionAndBack();
+		}else {
+			addPopupVisibility=true;
+			Clients.showNotification(errString);	
+		}
 	}
-    @Command
-    @NotifyChange("attributeDataMap")
-    public void resetHashMap() {
-    	for(String currentKey:attributeDataMap.values()) {
-    		attributeDataMap.put(currentKey, "");
-    	}
-    	
-    	
-    }
-    
+	
+	@Command
+	@NotifyChange("*")
+	public void updateComponent() throws Exception{
+		///////////////////////////////////////////////////////////////////////////////////////////////////////////
+		////// CHECK DATA
+		String errString=null;
+		errString=checkFields(idList, selectedElement.getFragmentTypeDef(), attributeDataMap, fragmentMap.get(selectedElement.getFragmentTypeDef()));
+		
+		if ((errString.equals(""))==true) {
+			
+			generateFragment(attributeDataMap);
+			///////////////////////////////////////////////////////////////////////////////////////////////////////////
+			////// NODE REMOVAL
+			idList.remove(selectedElement.getAttributeDataMap().get("id"));
+			selectedElement.setAttributeDataMap(attributeDataMap);
+			selectedElement.setDescription(attributeDataMap.get("id"));
+			idList.add(attributeDataMap.get("id"));
+			// RESET WINDOW SELECTIONS OR CONTENT
+			resetModifyPopUpAndBack();
+		}else {
+			modifyPopupVisibility=true;
+			Clients.showNotification(errString);	
+		}
+	}
+	
     @Command
     @NotifyChange("*")
     public void resetPopUpSelectionAndBack() {
     	resetHashMap();
     	addPopupVisibility=false;
+    	selectedFragment=null;
     }
     
+    @Command
+    @NotifyChange("*")
+    public void resetModifyPopUpAndBack() {
+    	resetHashMapModify(selectedElement.getFragmentTypeDef());
+    	modifyPopupVisibility=false;
+    }
     
-	
+    @Command
+    @NotifyChange("*")
+    public void openModifyPopUp() {
+//    	resetHashMapModify(selectedElement.getFragmentTypeDef());
+    	modifyPopupVisibility=true;
+    }
+    
+    @Command
+    @NotifyChange("attributeDataMap")
+    public void resetHashMap() {
+    	//TAKING THE CONTROL HASHMAP AS REFERERENCE TO POPULATE THE DEFAULT EMPTY HASHMAP
+    	for(String currentKey: fragmentMap.get(selectedFragment).keySet()) {
+    		attributeDataMap.put(currentKey, "");
+    	}
+    }
+    
+    @Command
+    @NotifyChange("*")
+    public void resetHashMapModify(@BindingParam("selectedFragment") FragmentType selectedFragment) {
+    	//TAKING THE CONTROL HASHMAP AS REFERERENCE TO POPULATE THE DEFAULT EMPTY HASHMAP
+    	for(String currentKey: fragmentMap.get(selectedFragment).keySet()) {
+    		attributeDataMap.put(currentKey, "");
+    	}
+    }
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//////UTILITIES
-	private String checkFields(ArrayList<String> idList, FragmentType selectedType, Map<String, String> attributeMap, HashMap<String, Boolean> controlComponentMap) {
+        
+    //CHECK IF ALL THE MANDATORY FIELDS ARE NOT EMPTY
+	private String checkFields(ArrayList<String> idList, FragmentType selectedType, Map<String, String> attributeMap,
+			HashMap<String, Boolean> controlComponentMap) {
 		String errMsgFun = "";
 
-		for (Boolean currentCheck : controlComponentMap.values()) {
-			for (String currentCheckName : controlComponentMap.keySet()) {
-				
-				for (String currentAttributeValue : attributeMap.values()) {
-					for (String currentAttributeName : attributeMap.keySet()) {
-						if (currentCheck && currentCheckName.equals(currentAttributeName)) {
-	
-							if (currentAttributeValue == "" || currentAttributeValue == null) {
-								errMsgFun += currentAttributeName;
-								errMsgFun += " \n";
-							}
-						}
-					}		
+		int controlKeyPosition = 0;
+		int controlCheckPosition = 0;
+		
+		// CYCLE ON CONTROL MAP ID'S
+		for (String currentCheckName : controlComponentMap.keySet()) {
+			// SETTING CURRENT POSITION
+			controlCheckPosition = 0;
+			// CYCLE ON MAP BOOLEANS
+			for (Boolean currentCheckBool : controlComponentMap.values()) {
+				// ONLY ON THE DIAGONAL OF THE MATRIX
+				if (controlKeyPosition == controlCheckPosition) {
+					System.out.println(currentCheckName + " con controllo obbligatorio " + currentCheckBool);
+
+					if (currentCheckBool && (attributeMap.get(currentCheckName) == "" || attributeMap.get(currentCheckName) == null)) {
+						errMsgFun += currentCheckName;
+						errMsgFun += " \n";
+					}
 				}
+				controlCheckPosition++;
 			}
+			controlKeyPosition++;
 		}
-		
-		if((errMsgFun.equals(""))==false) {
-			errMsgFun += " empty. Please insert all the data. \n";
+
+		if ((errMsgFun.equals("")) == false) {
+			errMsgFun += " empty. Please insert all the mandatory data. \n";
 		}
-		
-		if(idList.contains(attributeMap.get("id"))){
+
+		if (idList.contains(attributeMap.get("id"))) {
 			errMsgFun += "Node Id already exists. Please change it";
 		}
-		
+		System.out.println(errMsgFun);
 		return errMsgFun;
 	}
-
+	
+	private void generateFragment(Map<String, String> userMap) throws Exception {
+		///////////////////////////////////////////////////////////////////////////////////////////////////////////
+		////// SETTING UP VELOCITY
+		VelocityEngine engine = new VelocityEngine();
+		ServletContext sc = WebApps.getCurrent().getServletContext();
+		engine.setApplicationAttribute("javax.servlet.ServletContext", sc);
+		engine.setProperty("resource.loader", "webapp");
+		engine.setProperty("webapp.resource.loader.class", "org.apache.velocity.tools.view.WebappResourceLoader");
+		engine.setProperty("webapp.resource.loader.path", "/templateFolder/");
+		engine.init();
+		///////////////////////////////////////////////////////////////////////////////////////////////////////////
+		////// GETTING THE TEMPLATE AND USE IT
+		Template template = engine.getTemplate("template.vm");
+		VelocityContext vc = new VelocityContext();
+		vc.put("attributeDataMap", userMap);
+		StringWriter writer = new StringWriter();
+		template.merge(vc, writer);
+		///////////////////////////////////////////////////////////////////////////////////////////////////////////
+		////// SAVING OUTPUT
+		String path = System.getProperty("user.home");
+		out = new FileWriter(path + "/git/CMSProject/zkVelocityLayout/src/main/webapp/templateFolder/mod.html");
+		out.write(writer.toString());
+		out.close();
+		System.out.println(writer);
+	}
 }
