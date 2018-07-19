@@ -33,7 +33,7 @@
 				<div>
 					<draggableTree model="@bind(vm.model)" selectedElement="@save(vm.selectedElement)"></draggableTree>
 
-					<!-- Add Window -->
+<!-- Add Window -->
 					<window id="addPopupWindow" sclass="popUpWindows"
 						title="Add PopUp" width="50%" contentStyle="overflow:auto;"
 						mode="modal" visible="@load(vm.addPopupVisibility)"
@@ -100,12 +100,12 @@
 						mode="modal" visible="@load(vm.modifyPopupVisibility)"
 						onCancel="@command('resetModifyPopUpAndBack')">
 						<vlayout>
+						<!-- Title component -->
+						<div visible="@load(vm.fragmentList.get(0) eq vm.selectedElement.fragmentTypeDef)">
 							<hlayout>
 								<label value="Modify a component"></label>
 								<label value="@load(vm.selectedElement.fragmentTypeDef)"></label>
 							</hlayout>
-							<!-- Title component -->
-							<div>
 								Node ID:
 								<textbox
 									value="@load(vm.selectedElement.treeAttributeDataMap.id) @save(vm.attributeDataMap['id'], before='updateComponent')"
@@ -143,7 +143,33 @@
 							</div>
 						</vlayout>
 					</window>
+<!-- Rename Window -->
+					<window id="renameRootPopupWindow"
+						sclass="popUpWindows" title="Rename PopUp" width="50%"
+						contentStyle="overflow:auto;" mode="modal"
+						visible="@load(vm.renamePopupVisibility)"
+						onCancel="@command('renameBack')" >
+						<vlayout>
+							<!-- Title component -->
+							<div>
+								<vlayout>
+									<label value="Rename the root"></label>
+									Node ID:
+									<textbox
+										value="@load(vm.root.treeAttributeDataMap.id) @save(vm.attributeDataMap.id, before='renameProject')"
+										width="100%">
+									</textbox>
+									<div align="center">
+										<button label="Rename Project"
+											onClick="@command('renameProject')" width="30%" />
+										<button label="Back"
+											onClick="@command('renameBack')" width="30%" />
+									</div>
 
+								</vlayout>
+							</div>
+						</vlayout>
+					</window>
 				</div>
 			</west>
 			

@@ -43,13 +43,14 @@ public class MainPageViewModel {
 	
 	private boolean addPopupVisibility= false;
 	private boolean modifyPopupVisibility= false;
-	
+	private boolean renamePopupVisibility=false;
+
 	@Init
 	public void init(){
 		attributeDataMap = new HashMap<String,String>();
 		attributeDataMap.put("id", "root");
 		fragmentMap = FragmentMap.getFragmentMap();
-		root= new DraggableTreeCmsElement(null, "root", FragmentType.Title, attributeDataMap);
+		root= new DraggableTreeCmsElement(null, "root", null, attributeDataMap);
 		idList.add("root");
 	}
 	
@@ -122,6 +123,15 @@ public class MainPageViewModel {
 	public void setAddPopupVisibility(boolean addPopupVisibility) {
 		this.addPopupVisibility = addPopupVisibility;
 	}
+	
+	public boolean isRenamePopupVisibility() {
+		return renamePopupVisibility;
+	}
+
+	public void setRenamePopupVisibility(boolean renamePopupVisibility) {
+		this.renamePopupVisibility = renamePopupVisibility;
+	}
+
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//////COMMANDS		
 	@Command
@@ -213,11 +223,19 @@ public class MainPageViewModel {
     @Command
     @NotifyChange("*")
     public void openModifyPopUp() {
-    	System.out.println(selectedElement);
-    	System.out.println(selectedElement.getTreeAttributeDataMap());
-    	resetHashMapModify(selectedElement.getFragmentTypeDef());
-    	System.out.println(selectedElement.getTreeAttributeDataMap());
-    	modifyPopupVisibility=true;
+    	
+    	if(selectedElement.getTreeAttributeDataMap().get("id").equals(root.getTreeAttributeDataMap().get("id"))) {
+    		System.out.println(selectedElement);
+        	System.out.println(selectedElement.getTreeAttributeDataMap());
+        	renamePopupVisibility=true;
+    	}
+    	else {
+        	System.out.println(selectedElement);
+        	System.out.println(selectedElement.getTreeAttributeDataMap());
+        	resetHashMapModify(selectedElement.getFragmentTypeDef());
+        	System.out.println(selectedElement.getTreeAttributeDataMap());
+        	modifyPopupVisibility=true;
+    	}
     }
     
     @Command
@@ -235,10 +253,35 @@ public class MainPageViewModel {
     @Command
     @NotifyChange("*")
     public void resetHashMapModify(@BindingParam("selectedFragment") FragmentType selectedFragment) {
+    	
     	//TAKING THE CONTROL HASHMAP AS REFERERENCE TO POPULATE THE DEFAULT EMPTY HASHMAP
     	for(String currentKey: fragmentMap.get(selectedFragment).keySet()) {
     		attributeDataMap.put(currentKey, "");
     	}
+    }
+    
+    @Command
+    @NotifyChange("*")
+    public void renameProject() {
+    	if(attributeDataMap.get("id")=="" || attributeDataMap.get("id")==null) {
+    		Clients.showNotification("Project name empty. Fill the textbox.");	
+    	}
+    	else {
+    		System.out.println(attributeDataMap);
+    		idList.remove(root.getTreeAttributeDataMap().get("id"));
+    		root.setTreeAttributeDataMap(attributeDataMap);
+    		root.setDescription(attributeDataMap.get("id"));
+    		idList.add(attributeDataMap.get("id"));
+    		// RESET WINDOW SELECTIONS OR CONTENT
+    		renameBack(); 
+    	}
+    }
+    
+    @Command
+    @NotifyChange("*")
+    public void renameBack() {
+    	renamePopupVisibility=false;
+    	selectedFragment=null;
     }
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//////UTILITIES
