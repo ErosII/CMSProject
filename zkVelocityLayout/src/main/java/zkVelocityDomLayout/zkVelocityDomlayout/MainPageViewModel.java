@@ -17,6 +17,7 @@ import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 import org.zkoss.bind.annotation.BindingParam;
 import org.zkoss.bind.annotation.Command;
+import org.zkoss.bind.annotation.Init;
 import org.zkoss.zk.ui.WebApps;
 import org.zkoss.zk.ui.util.Clients;
 
@@ -43,12 +44,13 @@ public class MainPageViewModel {
 	private boolean addPopupVisibility= false;
 	private boolean modifyPopupVisibility= false;
 	
-	public MainPageViewModel(){
+	@Init
+	public void init(){
 		attributeDataMap = new HashMap<String,String>();
-		Map<String, String> rootMap = new HashMap<String, String>();
-		rootMap.put("id", "root");
-		root= new DraggableTreeCmsElement(null, "root", FragmentType.Title, rootMap);
+		attributeDataMap.put("id", "root");
 		fragmentMap = FragmentMap.getFragmentMap();
+		root= new DraggableTreeCmsElement(null, "root", FragmentType.Title, attributeDataMap);
+		idList.add("root");
 	}
 	
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -127,7 +129,7 @@ public class MainPageViewModel {
 	public void deleteNode(){
 		DraggableTreeComponent.removeFromParent(selectedElement);
 		root.recomputeSpacersRecursive();
-		idList.remove(selectedElement.getAttributeDataMap().get("id"));
+		idList.remove(selectedElement.getTreeAttributeDataMap().get("id"));
 	}
 	
 	@Command
@@ -149,11 +151,18 @@ public class MainPageViewModel {
 			generateFragment(attributeDataMap);
 			///////////////////////////////////////////////////////////////////////////////////////////////////////////
 			////// ADDING A NODE
+			System.out.println("Stampo map nodo selezionato");
+			System.out.println(selectedElement.getTreeAttributeDataMap());
+			System.out.println("Stampo map dell'utente");
 			System.out.println(attributeDataMap);
 			new DraggableTreeCmsElement(selectedElement, attributeDataMap.get("id") , selectedFragment, attributeDataMap);
 			idList.add(attributeDataMap.get("id"));
+			System.out.println("Stampo map del nodo selezionato dopo l'inserimento");
+			System.out.println(selectedElement.getTreeAttributeDataMap());
 			// RESET WINDOW SELECTIONS OR CONTENT
 			resetPopUpSelectionAndBack();
+			System.out.println("Stampo la mappa del nodo selezionato dopo il reset and bask");
+			System.out.println(selectedElement.getTreeAttributeDataMap());
 		}else {
 			addPopupVisibility=true;
 			Clients.showNotification(errString);	
@@ -165,6 +174,7 @@ public class MainPageViewModel {
 	public void updateComponent() throws Exception{
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////
 		////// CHECK DATA
+		System.out.println(selectedElement.getTreeAttributeDataMap());
 		String errString=null;
 		errString=checkFields(idList, selectedElement.getFragmentTypeDef(), attributeDataMap, fragmentMap.get(selectedElement.getFragmentTypeDef()));
 		
@@ -173,8 +183,8 @@ public class MainPageViewModel {
 			generateFragment(attributeDataMap);
 			///////////////////////////////////////////////////////////////////////////////////////////////////////////
 			////// NODE REMOVAL
-			idList.remove(selectedElement.getAttributeDataMap().get("id"));
-			selectedElement.setAttributeDataMap(attributeDataMap);
+			idList.remove(selectedElement.getTreeAttributeDataMap().get("id"));
+			selectedElement.setTreeAttributeDataMap(attributeDataMap);
 			selectedElement.setDescription(attributeDataMap.get("id"));
 			idList.add(attributeDataMap.get("id"));
 			// RESET WINDOW SELECTIONS OR CONTENT
@@ -203,17 +213,23 @@ public class MainPageViewModel {
     @Command
     @NotifyChange("*")
     public void openModifyPopUp() {
-//    	resetHashMapModify(selectedElement.getFragmentTypeDef());
+    	System.out.println(selectedElement);
+    	System.out.println(selectedElement.getTreeAttributeDataMap());
+    	resetHashMapModify(selectedElement.getFragmentTypeDef());
+    	System.out.println(selectedElement.getTreeAttributeDataMap());
     	modifyPopupVisibility=true;
     }
     
     @Command
     @NotifyChange("attributeDataMap")
     public void resetHashMap() {
+    	System.out.println(selectedElement.getTreeAttributeDataMap());
     	//TAKING THE CONTROL HASHMAP AS REFERERENCE TO POPULATE THE DEFAULT EMPTY HASHMAP
     	for(String currentKey: fragmentMap.get(selectedFragment).keySet()) {
     		attributeDataMap.put(currentKey, "");
     	}
+    	System.out.println(selectedElement.getTreeAttributeDataMap());
+    	
     }
     
     @Command

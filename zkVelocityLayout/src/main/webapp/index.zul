@@ -58,12 +58,12 @@
 								visible="@load(vm.fragmentList.get(0) eq vm.selectedFragment)">
 								Node ID:
 								<textbox
-									value="@load(vm.attributeDataMap['id']) @save(vm.attributeDataMap['id'], before='addComponent')"
+									value="@load(vm.attributeDataMap.id) @save(vm.attributeDataMap.id, before='addComponent')"
 									width="100%">
 								</textbox>
 								Title:
 								<textbox
-									value="@load(vm.attributeDataMap['content']) @save(vm.attributeDataMap['content'], before='addComponent')"
+									value="@load(vm.attributeDataMap.content) @save(vm.attributeDataMap.content, before='addComponent')"
 									width="100%">
 								</textbox>
 								Color:
@@ -108,12 +108,12 @@
 							<div>
 								Node ID:
 								<textbox
-									value="@load(vm.selectedElement.attributeDataMap.id) @save(vm.attributeDataMap['id'], before='updateComponent')"
+									value="@load(vm.selectedElement.treeAttributeDataMap.id) @save(vm.attributeDataMap['id'], before='updateComponent')"
 									width="100%">
 								</textbox>
 								Title:
 								<textbox
-									value="@load(vm.selectedElement.attributeDataMap.content) @save(vm.attributeDataMap['content'], before='updateComponent')"
+									value="@load(vm.selectedElement.treeAttributeDataMap.content) @save(vm.attributeDataMap['content'], before='updateComponent')"
 									width="100%">
 								</textbox>
 								Color:
