@@ -2,6 +2,7 @@ package zkVelocityDomLayout.zkVelocityDomlayout;
 
 
 import org.zkoss.bind.annotation.NotifyChange;
+import org.zkoss.zhtml.Messagebox;
 
 import java.io.FileWriter;
 import java.io.StringWriter;
@@ -137,9 +138,9 @@ public class MainPageViewModel {
 	@Command
 	@NotifyChange("*")
 	public void deleteNode(){
+		removeChildrenId(selectedElement);
 		DraggableTreeComponent.removeFromParent(selectedElement);
-		root.recomputeSpacersRecursive();
-		idList.remove(selectedElement.getTreeAttributeDataMap().get("id"));
+		root.recomputeSpacersRecursive();	
 	}
 	
 	@Command
@@ -281,6 +282,9 @@ public class MainPageViewModel {
     	renamePopupVisibility=false;
     	selectedFragment=null;
     }
+    
+
+    
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//////UTILITIES
         
@@ -348,4 +352,25 @@ public class MainPageViewModel {
 		out.close();
 		System.out.println(writer);
 	}
+	
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	////// REMOVE CHILDREN ID
+    public void removeChildrenId(DraggableTreeElement currentElement) {
+     	if(currentElement.getChilds().size()>0) {
+     		int listSize=currentElement.getChilds().size();
+     		List<DraggableTreeElement> currentList = currentElement.getChilds();
+     		
+     		for(int i=0;i<listSize;i++) {
+     			removeChildrenId(currentList.get(i));
+     		}
+     		System.out.println(currentElement.getChilds());
+     	}	
+     	else {
+     		System.out.println("Non ho figli");
+     		String currentId=currentElement.getDescription();
+     		System.out.println(currentId);
+     		idList.remove(currentId);
+     		System.out.println("Rimosso");
+     	}  		
+    }
 }
