@@ -224,7 +224,7 @@ public class MainPageViewModel {
     @NotifyChange("*")
     public void openModifyPopUp() {
     	
-    	if(selectedElement.getTreeAttributeDataMap().get("id").equals(root.getTreeAttributeDataMap().get("id"))) {
+    	if(selectedElement.getDescription().equals(root.getDescription())) {
     		System.out.println(selectedElement);
         	System.out.println(selectedElement.getTreeAttributeDataMap());
         	renamePopupVisibility=true;
@@ -267,9 +267,7 @@ public class MainPageViewModel {
     		Clients.showNotification("Project name empty. Fill the textbox.");	
     	}
     	else {
-    		System.out.println(attributeDataMap);
-    		idList.remove(root.getTreeAttributeDataMap().get("id"));
-    		root.setTreeAttributeDataMap(attributeDataMap);
+    		idList.remove(root.getDescription());
     		root.setDescription(attributeDataMap.get("id"));
     		idList.add(attributeDataMap.get("id"));
     		// RESET WINDOW SELECTIONS OR CONTENT

@@ -156,7 +156,7 @@
 									<label value="Rename the root"></label>
 									Node ID:
 									<textbox
-										value="@load(vm.root.treeAttributeDataMap.id) @save(vm.attributeDataMap.id, before='renameProject')"
+										value="@load(vm.root.description) @save(vm.attributeDataMap.id, before='renameProject')"
 										width="100%">
 									</textbox>
 									<div align="center">
