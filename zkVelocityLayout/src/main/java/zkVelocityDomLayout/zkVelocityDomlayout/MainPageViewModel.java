@@ -2,9 +2,14 @@ package zkVelocityDomLayout.zkVelocityDomlayout;
 
 
 import org.zkoss.bind.annotation.NotifyChange;
-import org.zkoss.zhtml.Messagebox;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,8 +31,13 @@ import biz.opengate.zkComponents.draggableTree.*;
 import zkVelocityLayout.FragmentPackage.FragmentMap;
 import zkVelocityLayout.FragmentPackage.FragmentType;
 
-public class MainPageViewModel {
+public class MainPageViewModel implements Serializable{
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
 	private DraggableTreeCmsElement root;
 	private DraggableTreeModel model;
 	private DraggableTreeCmsElement selectedElement;
@@ -47,12 +57,42 @@ public class MainPageViewModel {
 	private boolean renamePopupVisibility=false;
 
 	@Init
-	public void init(){
+	public void init() throws Exception{
 		attributeDataMap = new HashMap<String,String>();
-		attributeDataMap.put("id", "root");
 		fragmentMap = FragmentMap.getFragmentMap();
-		root= new DraggableTreeCmsElement(null, "root", null, attributeDataMap);
-		idList.add("root");
+		
+		try {
+			String path = System.getProperty("user.home");
+			FileInputStream fin = new FileInputStream(path+"/git/CMSProject/zkVelocityLayout/src/main/webapp/resources/savedRoot.ser");
+			System.out.println("Opening file stream");
+			ObjectInputStream inObj = new ObjectInputStream(fin);
+			System.out.println("Reading root Object");
+			System.out.println("-------------------------------------------------");
+			root = (DraggableTreeCmsElement) inObj.readObject();
+			System.out.println("-------------------------------------------------");
+			System.out.println(inObj.readObject());
+			System.out.println("-------------------------------------------------");
+			root = (DraggableTreeCmsElement) inObj.readObject();
+			System.out.println("Root initialization");
+			inObj.close();
+			System.out.println("File stream closed");
+		}
+		catch (Exception e){
+			System.out.println("Non saved root");
+			attributeDataMap.put("id", "root");
+			root= new DraggableTreeCmsElement(null, "root", null, attributeDataMap);	
+		} 
+
+		try {
+			FileInputStream finList = new FileInputStream("savedIdList.ser") ;
+			ObjectInputStream ListObj = new ObjectInputStream(finList); 
+			idList = (ArrayList<String>) ListObj.readObject();
+			ListObj.close();
+		}
+		catch(Exception e) {
+			System.out.println("Non saved list");
+			idList.add(root.getTreeAttributeDataMap().get("id"));
+		}
 	}
 	
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -106,7 +146,7 @@ public class MainPageViewModel {
 	}
 
 	public void setAttributeDataMap(Map<String, String> attributeDataMap) {
-		this.attributeDataMap = attributeDataMap;
+			this.attributeDataMap=attributeDataMap;
 	}
 	
 	public boolean isModifyPopupVisibility() {
@@ -174,6 +214,18 @@ public class MainPageViewModel {
 			resetPopUpSelectionAndBack();
 			System.out.println("Stampo la mappa del nodo selezionato dopo il reset and bask");
 			System.out.println(selectedElement.getTreeAttributeDataMap());
+			// SAVE THE NEW TREE
+			String path = System.getProperty("user.home");
+			System.out.println("Opening file stream");
+			FileOutputStream fout = new FileOutputStream(path+"/git/CMSProject/zkVelocityLayout/src/main/webapp/resources/savedRoot.ser"); 
+			System.out.println("New file object");
+			ObjectOutputStream out = new ObjectOutputStream(fout);
+			System.out.println("Writing root");
+			out.writeObject(root);
+			System.out.println("Closing file stream");
+			out.close();
+			System.out.println("Saved Root");
+			
 		}else {
 			addPopupVisibility=true;
 			Clients.showNotification(errString);	
@@ -189,18 +241,25 @@ public class MainPageViewModel {
 		String errString=null;
 		errString=checkFields(idList, selectedElement.getFragmentTypeDef(), attributeDataMap, fragmentMap.get(selectedElement.getFragmentTypeDef()));
 		
-		if ((errString.equals(""))==true) {
+		if (errString.equals("")) {
 			
-			generateFragment(attributeDataMap);
-			///////////////////////////////////////////////////////////////////////////////////////////////////////////
-			////// NODE REMOVAL
-			idList.remove(selectedElement.getTreeAttributeDataMap().get("id"));
-			selectedElement.setTreeAttributeDataMap(attributeDataMap);
-			selectedElement.setDescription(attributeDataMap.get("id"));
-			idList.add(attributeDataMap.get("id"));
-			// RESET WINDOW SELECTIONS OR CONTENT
-			resetModifyPopUpAndBack();
-		}else {
+			if (attributeDataMap.get("id").equals("") || (attributeDataMap.get("id")==null)){
+				modifyPopupVisibility=true;
+				Clients.showNotification("Node Id can not be empty. Reloded previous value.");			
+			}
+			else {
+				generateFragment(attributeDataMap);
+				///////////////////////////////////////////////////////////////////////////////////////////////////////////
+				////// NODE REMOVAL
+				idList.remove(selectedElement.getTreeAttributeDataMap().get("id"));
+				selectedElement.setTreeAttributeDataMap(attributeDataMap);
+				selectedElement.setDescription(attributeDataMap.get("id"));
+				idList.add(attributeDataMap.get("id"));
+				// RESET WINDOW SELECTIONS OR CONTENT
+				resetModifyPopUpAndBack();		
+			}
+		}
+		else {
 			modifyPopupVisibility=true;
 			Clients.showNotification(errString);	
 		}
@@ -263,7 +322,7 @@ public class MainPageViewModel {
     
     @Command
     @NotifyChange("*")
-    public void renameProject() {
+    public void renameProject() throws Exception {
     	if(attributeDataMap.get("id")=="" || attributeDataMap.get("id")==null) {
     		Clients.showNotification("Project name empty. Fill the textbox.");	
     	}
@@ -271,6 +330,19 @@ public class MainPageViewModel {
     		idList.remove(root.getDescription());
     		root.setDescription(attributeDataMap.get("id"));
     		idList.add(attributeDataMap.get("id"));
+    		
+    		// SAVE THE NEW TREE
+			String path = System.getProperty("user.home");
+			System.out.println("Opening file stream");
+			FileOutputStream fout = new FileOutputStream(path+"/git/CMSProject/zkVelocityLayout/src/main/webapp/resources/savedRoot.ser"); 
+			System.out.println("New file object");
+			ObjectOutputStream out = new ObjectOutputStream(fout);
+			System.out.println("Writing root");
+			out.writeObject(root);
+			System.out.println("Closing file stream");
+			out.close();
+			System.out.println("Saved Root");
+    		
     		// RESET WINDOW SELECTIONS OR CONTENT
     		renameBack(); 
     	}
@@ -282,8 +354,6 @@ public class MainPageViewModel {
     	renamePopupVisibility=false;
     	selectedFragment=null;
     }
-    
-
     
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//////UTILITIES
@@ -320,7 +390,7 @@ public class MainPageViewModel {
 			errMsgFun += " empty. Please insert all the mandatory data. \n";
 		}
 
-		if (idList.contains(attributeMap.get("id"))) {
+		if (idList.contains(attributeMap.get("id")) && modifyPopupVisibility==false) {
 			errMsgFun += "Node Id already exists. Please change it";
 		}
 		System.out.println(errMsgFun);

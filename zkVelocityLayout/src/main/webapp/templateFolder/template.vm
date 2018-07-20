@@ -8,7 +8,7 @@
 	 	#if($rno == "id")
 	 		#set ($id = $attributeDataMap.get($rno)) 	
 		#end
-		#if($rno == "contentString")
+		#if($rno == "content")
 	 		#set ($content= $attributeDataMap.get($rno))	   		   	
 		#end
 		#if($rno == "colorAttribute")

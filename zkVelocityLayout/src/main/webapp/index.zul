@@ -49,7 +49,7 @@
 
 								<button label="Back"
 									onClick="addPopupWindow.setVisible(false)"
-									visible="@load(empty vm.selectedFragment)">
+									visible="@load(empty vm.selectedFragment or not (vm.selectedFragment eq vm.fragmentList.get(0)))">
 								</button>
 
 							</hlayout>
@@ -67,7 +67,7 @@
 									width="100%">
 								</textbox>
 								Color:
-
+								<space></space>
 								<div align="center">
 									<button sclass="redButton"
 										label="Red"
@@ -82,7 +82,7 @@
 										label="Yellow"
 										onClick="@command('saveColor', colorAttribute='yellow')" />
 								</div>
-
+								<space></space>
 								<div align="center">
 									<button label="Add component"
 										onClick="@command('addComponent')" width="30%" />
@@ -132,7 +132,7 @@
 										label="Yellow"
 										onClick="@command('saveColor', colorAttribute='yellow')" />
 								</div>
-
+								<space></space>
 								<div align="center">
 									<button label="Update"
 										onClick="@command('updateComponent')" width="30%" />
