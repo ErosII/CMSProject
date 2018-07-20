@@ -46,5 +46,10 @@ public class DraggableTreeCmsElement extends DraggableTreeElement implements Ser
 			this.treeAttributeDataMap.put(keyValue, treeAttributeDataMap.get(keyValue));
 		}
 	}
-
+	
+	public DraggableTreeCmsElement() {
+		super(null, null);
+		
+	}
+	
 }
