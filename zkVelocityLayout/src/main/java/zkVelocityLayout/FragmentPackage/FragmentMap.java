@@ -33,14 +33,12 @@ public class FragmentMap {
 				fragmentMap.put(fragmentName, titleMap);
 			}
 		
-			
 			if(fragmentName.equals(FragmentType.Subtitle)) {
 				fragmentMap.put(fragmentName, subtitleMap);
 			}
 				
 			if(fragmentName.equals(FragmentType.Paragraph)) {
-				fragmentMap.put(fragmentName, paragraphMap);
-				
+				fragmentMap.put(fragmentName, paragraphMap);	
 			}
 			
 		}

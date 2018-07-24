@@ -3,10 +3,13 @@ package zkVelocityDomLayout.zkVelocityDomlayout;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.Reader;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import javax.servlet.ServletContext;
@@ -20,7 +23,14 @@ import org.zkoss.zk.ui.WebApps;
 import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.bind.annotation.NotifyChange;
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonToken;
+
 import biz.opengate.zkComponents.draggableTree.*;
+import biz.opengate.zkComponents.draggableTree.DraggableTreeElement.DraggableTreeElementType;
 import zkVelocityLayout.FragmentPackage.FragmentMap;
 import zkVelocityLayout.FragmentPackage.FragmentType;
 
@@ -40,36 +50,66 @@ public class MainPageViewModel {
 	private boolean renamePopupVisibility = false;
 	private String treePath;
 	private String listPath;
+	
+	
+	private void reloadTree(DraggableTreeCmsElement currentElement) throws Exception{
+			
 
+			
+			FileReader reader = new FileReader(getTreePath());
+			Gson gson = new Gson();
+			JsonParser parser = new JsonParser();
+			// MAIN	JSON OBJECT
+			JsonObject draggableTreeCmsElement = (JsonObject) parser.parse(reader);
+			// CURRENT ATTRIBUTE MAP
+			Map<String, String> loadedMap = gson.fromJson(draggableTreeCmsElement.getAsJsonObject("treeAttributeDataMap"), Map.class);
+			System.out.println(loadedMap);
+			currentElement.setTreeAttributeDataMap(loadedMap);
+			// ELEMENT TYPE
+			DraggableTreeElementType treeElementType = gson.fromJson(draggableTreeCmsElement.getAsJsonObject().getAsJsonPrimitive("type"), DraggableTreeElementType.class);
+			currentElement.setType(treeElementType);
+			System.out.println(treeElementType);
+			// CHILDREN LIST
+			List<DraggableTreeElement> currentList = gson.fromJson(draggableTreeCmsElement.getAsJsonArray("childs"), List.class);
+			System.out.println(currentList);
+			if (currentList.size()>0) {
+				
+			}
+			else {
+				currentElement.setChilds(currentList);
+			}
+			// DESCRIPTION
+			String LocalString=gson.fromJson(draggableTreeCmsElement.getAsJsonObject().getAsJsonPrimitive("description"), String.class);
+			System.out.println(LocalString);
+			currentElement.setDescription(LocalString);
+			// TREE ELEMENT OPEN
+			Boolean openBoolean = gson.fromJson(draggableTreeCmsElement.getAsJsonObject().getAsJsonPrimitive("treeElementOpen"), Boolean.class);
+			currentElement.setTreeElementOpen(openBoolean);
+			System.out.println(openBoolean);
+			System.out.println("Loaded tree root");
+			
+	}
+	
 	@Init
+	@NotifyChange("*")
 	public void init() throws Exception {
 
 		attributeDataMap = new HashMap<String, String>();
 		fragmentMap = FragmentMap.getFragmentMap();
 
-		try (Reader reader = new FileReader(getTreePath())) {
-
-			Gson gson = new Gson();
-			root = gson.fromJson(reader, DraggableTreeCmsElement.class);
-			//fixLoadedRoot(root);
-			System.out.println("Loaded tree root");
+		try {
+			attributeDataMap.put("id", "root");
+			root = new DraggableTreeCmsElement(null, "root", null, attributeDataMap);
+			reloadTree(root);
+			saveTreeToDisc();
 
 		} catch (Exception e) {
+			e.printStackTrace();
 			System.out.println("Non saved root");
-			try {
-				Gson gson = new Gson();
-				attributeDataMap.put("id", "root");
-				root = new DraggableTreeCmsElement(null, "root", null, attributeDataMap);
-				String rootString = gson.toJson(root);
-				System.out.println(rootString);
-				Writer treeWriter = new FileWriter(getTreePath());
-				gson.toJson(root, treeWriter);
-				treeWriter.close();
-				System.out.println("Saved tree root");
-
-			} catch (Exception eIn) {
-				eIn.printStackTrace();
-			}
+			attributeDataMap.put("id", "root");
+			root = new DraggableTreeCmsElement(null, "root", null, attributeDataMap);
+			saveTreeToDisc(); 
+			System.out.println("Saved default tree root");
 		}
 	}
 
@@ -310,8 +350,6 @@ public class MainPageViewModel {
 		Gson gson = new Gson();
 		Writer treeWriterUpdate = new FileWriter(getTreePath());
 		try {
-			System.out.println("Saving in project rename");
-			System.out.println(gson.toJson(root));
 			gson.toJson(root, treeWriterUpdate);
 			treeWriterUpdate.close();
 		} catch (Exception e) {
