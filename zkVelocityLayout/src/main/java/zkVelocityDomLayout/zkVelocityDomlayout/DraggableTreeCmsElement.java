@@ -3,22 +3,14 @@ package zkVelocityDomLayout.zkVelocityDomlayout;
 import biz.opengate.zkComponents.draggableTree.*;
 import zkVelocityLayout.FragmentPackage.FragmentType;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.collections.KeyValue;
-
-public class DraggableTreeCmsElement extends DraggableTreeElement implements Serializable {
-	
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-	
+public class DraggableTreeCmsElement extends DraggableTreeElement{
+		
 	private FragmentType fragmentTypeDef;
 	private Map<String,String> treeAttributeDataMap = new HashMap<String, String>();
-		
+
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//////GETTERS AND SETTERS
 	public FragmentType getFragmentTypeDef() {
