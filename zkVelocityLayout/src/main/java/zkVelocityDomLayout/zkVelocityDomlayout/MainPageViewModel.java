@@ -2,15 +2,11 @@ package zkVelocityDomLayout.zkVelocityDomlayout;
 
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.Reader;
-import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import javax.servlet.ServletContext;
@@ -28,10 +24,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonToken;
-
 import biz.opengate.zkComponents.draggableTree.*;
 import biz.opengate.zkComponents.draggableTree.DraggableTreeElement.DraggableTreeElementType;
 import zkVelocityLayout.FragmentPackage.FragmentMap;
@@ -52,7 +44,6 @@ public class MainPageViewModel {
 	private boolean modifyPopupVisibility = false;
 	private boolean renamePopupVisibility = false;
 	private String treePath;
-	private String listPath;
 	
 	@Init
 	@NotifyChange("*")
@@ -109,7 +100,7 @@ public class MainPageViewModel {
 			idList.add(attributeDataMap.get("id"));
 			// RESET WINDOW SELECTIONS OR CONTENT
 			saveTreeToDisc();
-			resetPopUpSelectionAndBack();
+			resetAndBack();
 		} else {
 			addPopupVisibility = true;
 			Clients.showNotification(errString);
@@ -139,7 +130,7 @@ public class MainPageViewModel {
 				selectedElement.setDescription(attributeDataMap.get("id"));
 				idList.add(attributeDataMap.get("id"));
 				// RESET WINDOW SELECTIONS OR CONTENT
-				resetModifyPopUpAndBack();
+				resetAndBack();
 			}
 		} else {
 			modifyPopupVisibility = true;
@@ -149,57 +140,35 @@ public class MainPageViewModel {
 
 	@Command
 	@NotifyChange("*")
-	public void resetPopUpSelectionAndBack() {
-		resetHashMap();
-		addPopupVisibility = false;
-		selectedFragment = null;
-	}
-
-	@Command
-	@NotifyChange("*")
-	public void resetModifyPopUpAndBack() {
-		resetHashMapModify(selectedElement.getFragmentTypeDef());
-		modifyPopupVisibility = false;
-	}
-
-	@Command
-	@NotifyChange("*")
-	public void openModifyPopUp() {
-
-		if (selectedElement.getDescription().equals(root.getDescription())) {
-			System.out.println(selectedElement);
-			System.out.println(selectedElement.getTreeAttributeDataMap());
+	public void openPopUp(@BindingParam("popUpType") String popUpType){
+		if (popUpType.equals("add")) {
+			addPopupVisibility = true;
+		}
+		if (popUpType.equals("modify")){
+			if(selectedElement.getDescription().equals(root.getDescription())){
 			renamePopupVisibility = true;
-		} else {
-			System.out.println(selectedElement);
-			System.out.println(selectedElement.getTreeAttributeDataMap());
-			resetHashMapModify(selectedElement.getFragmentTypeDef());
-			System.out.println(selectedElement.getTreeAttributeDataMap());
+			} else {
+			resetHashMap(selectedElement.getFragmentTypeDef());
 			modifyPopupVisibility = true;
+			}
 		}
 	}
 
 	@Command
 	@NotifyChange("attributeDataMap")
-	public void resetHashMap() {
+	public void resetHashMap(@BindingParam("selectedFragment") FragmentType loadedFragment) {
 		System.out.println(selectedElement.getTreeAttributeDataMap());
 		// TAKING THE CONTROL HASHMAP AS REFERERENCE TO POPULATE THE DEFAULT EMPTY
 		// HASHMAP
-		for (String currentKey : fragmentMap.get(selectedFragment).keySet()) {
-			attributeDataMap.put(currentKey, "");
+		if (loadedFragment==null) {
+			for (String currentKey : fragmentMap.get(selectedFragment).keySet()) {
+				attributeDataMap.put(currentKey, "");
+			}
 		}
-		System.out.println(selectedElement.getTreeAttributeDataMap());
-
-	}
-
-	@Command
-	@NotifyChange("*")
-	public void resetHashMapModify(@BindingParam("selectedFragment") FragmentType selectedFragment) {
-
-		// TAKING THE CONTROL HASHMAP AS REFERERENCE TO POPULATE THE DEFAULT EMPTY
-		// HASHMAP
-		for (String currentKey : fragmentMap.get(selectedFragment).keySet()) {
-			attributeDataMap.put(currentKey, "");
+		else {
+			for (String currentKey : fragmentMap.get(loadedFragment).keySet()) {
+				attributeDataMap.put(currentKey, "");
+			}
 		}
 	}
 
@@ -215,14 +184,24 @@ public class MainPageViewModel {
 			// SAVE TREE AND ID LIST TO FILE
 			saveTreeToDisc();
 			// RESET WINDOW SELECTIONS OR CONTENT
-			renameBack();
+			resetAndBack();
 		}
 	}
 
 	@Command
 	@NotifyChange("*")
-	public void renameBack() {
-		renamePopupVisibility = false;
+	public void resetAndBack() {
+		if (addPopupVisibility==true) {
+			addPopupVisibility = false;	
+			resetHashMap(selectedElement.getFragmentTypeDef());
+		}
+		if (modifyPopupVisibility==true){
+			modifyPopupVisibility = false;
+			resetHashMap(selectedElement.getFragmentTypeDef());
+		}
+		if (renamePopupVisibility==true){
+			renamePopupVisibility = false;
+		}
 		selectedFragment = null;
 	}
 
@@ -274,7 +253,7 @@ public class MainPageViewModel {
 		return errMsgFun;
 	}
 
-	////// GENERATE THE HTML FRAGMENT
+	////// GENERATE HTML FRAGMENT
 	private void generateFragment(Map<String, String> userMap) throws Exception {
 		////// SETTING UP VELOCITY
 		VelocityEngine engine = new VelocityEngine();
@@ -300,9 +279,7 @@ public class MainPageViewModel {
 
 	////// REMOVE CHILDREN ID
 	public void removeChildrenId(DraggableTreeElement currentElement) {
-
 		idList.remove(currentElement.getDescription());
-
 		if (currentElement.getChilds().size() > 0) {
 			int listSize = currentElement.getChilds().size();
 			List<DraggableTreeElement> currentList = currentElement.getChilds();
@@ -328,7 +305,6 @@ public class MainPageViewModel {
 	
 	//////LOAD SAVED TREE	
 	private void reloadTree(DraggableTreeCmsElement currentElement, JsonObject currentJsonObject, Boolean iAmRoot) throws Exception{
-
 		// ELEMENTS TO LOAD
 		Map<String, String> loadedMap = new HashMap<String, String>();
 		DraggableTreeElementType treeElementType=null;
@@ -365,21 +341,21 @@ public class MainPageViewModel {
 				Iterator<JsonElement> localChildren = currentChilds.iterator();
 				
 				while (localChildren.hasNext()) {
-					reloadTree(currentElement, localChildren.next().getAsJsonObject() ,false);
+					reloadTree(currentElement, localChildren.next().getAsJsonObject(), false);
 				}
 			}	
 		}
 		else {
 			if(treeElementType.equals(DraggableTreeElementType.NORMAL)) {
-						
 				DraggableTreeCmsElement localNode = new DraggableTreeCmsElement(currentElement, loadedDescription, loadedFragmentTypeDef, loadedMap);		
 				idList.add(loadedMap.get("id"));
-				root.recomputeSpacersRecursive();
+				root.recomputeSpacersRecursive();	
+
 				if (currentChilds.size()>0) {
 					Iterator<JsonElement> localChildren = currentChilds.iterator();
 					while (localChildren.hasNext()) {
 						reloadTree(localNode,localChildren.next().getAsJsonObject() ,false);
-					}
+					}				
 				}	
 			}
 		}
@@ -472,12 +448,4 @@ public class MainPageViewModel {
 		return treePath;
 	}
 
-	public String getListPath() {
-
-		if (listPath == "" || listPath == null)
-			listPath = System.getProperty("user.home")
-					+ "/git/CMSProject/zkVelocityLayout/src/main/webapp/resources/savedList.json";
-
-		return listPath;
-	}
 }

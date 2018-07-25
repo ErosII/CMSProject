@@ -32,144 +32,13 @@
 			<west width="20%" border="0" autoscroll="true">
 				<div>
 					<draggableTree model="@bind(vm.model)" selectedElement="@save(vm.selectedElement)"></draggableTree>
-
-<!-- Add Window -->
-					<window id="addPopupWindow" sclass="popUpWindows"
-						title="Add PopUp" width="50%" contentStyle="overflow:auto;"
-						mode="modal" visible="@load(vm.addPopupVisibility)"
-						onCancel="@command('resetPopUpSelectionAndBack')">
-						<vlayout>
-							<hlayout>
-								<label value="Add a component"></label>
-
-								<listbox model="@load(vm.fragmentList)"
-									mold="select" selectedItem="@bind(vm.selectedFragment)"
-									rows="1" width="100%" onSelect="@command('resetHashMap', selectedFragment=vm.selectedFragment)">
-								</listbox>
-
-								<button label="Back"
-									onClick="addPopupWindow.setVisible(false)"
-									visible="@load(empty vm.selectedFragment or not (vm.selectedFragment eq vm.fragmentList.get(0)))">
-								</button>
-
-							</hlayout>
-							<!-- Title component -->
-							<div
-								visible="@load(vm.fragmentList.get(0) eq vm.selectedFragment)">
-								Node ID:
-								<textbox
-									value="@load(vm.attributeDataMap.id) @save(vm.attributeDataMap.id, before='addComponent')"
-									width="100%">
-								</textbox>
-								Title:
-								<textbox
-									value="@load(vm.attributeDataMap.content) @save(vm.attributeDataMap.content, before='addComponent')"
-									width="100%">
-								</textbox>
-								Color:
-								<space></space>
-								<div align="center">
-									<button sclass="redButton"
-										label="Red"
-										onClick="@command('saveColor', colorAttribute='red')" />
-									<button sclass="blueButton"
-										label="Blue"
-										onClick="@command('saveColor', colorAttribute='blue')" />
-									<button sclass="greenButton"
-										label="Green"
-										onClick="@command('saveColor', colorAttribute='green')" />
-									<button sclass="yellowButton"
-										label="Yellow"
-										onClick="@command('saveColor', colorAttribute='yellow')" />
-								</div>
-								<space></space>
-								<div align="center">
-									<button label="Add component"
-										onClick="@command('addComponent')" width="30%" />
-									<button label="Back"
-										onClick="@command('resetPopUpSelectionAndBack')" width="30%" />
-								</div>
-
-							</div>
-						</vlayout>
-					</window>
-				
-<!-- Modify Window -->
-					<window id="modifyPopupWindow" sclass="popUpWindows"
-						title="Modify PopUp" width="50%" contentStyle="overflow:auto;"
-						mode="modal" visible="@load(vm.modifyPopupVisibility)"
-						onCancel="@command('resetModifyPopUpAndBack')">
-						<vlayout>
-						<!-- Title component -->
-						<div visible="@load(vm.fragmentList.get(0) eq vm.selectedElement.fragmentTypeDef)">
-							<hlayout>
-								<label value="Modify a component"></label>
-								<label value="@load(vm.selectedElement.fragmentTypeDef)"></label>
-							</hlayout>
-								Node ID:
-								<textbox
-									value="@load(vm.selectedElement.treeAttributeDataMap.id) @save(vm.attributeDataMap['id'], before='updateComponent')"
-									width="100%">
-								</textbox>
-								Title:
-								<textbox
-									value="@load(vm.selectedElement.treeAttributeDataMap.content) @save(vm.attributeDataMap['content'], before='updateComponent')"
-									width="100%">
-								</textbox>
-								Color:
-
-								<div align="center">
-									<button sclass="redButton"
-										label="Red"
-										onClick="@command('saveColor', colorAttribute='red')" />
-									<button sclass="blueButton"
-										label="Blue"
-										onClick="@command('saveColor', colorAttribute='blue')" />
-									<button sclass="greenButton"
-										label="Green"
-										onClick="@command('saveColor', colorAttribute='green')" />
-									<button sclass="yellowButton"
-										label="Yellow"
-										onClick="@command('saveColor', colorAttribute='yellow')" />
-								</div>
-								<space></space>
-								<div align="center">
-									<button label="Update"
-										onClick="@command('updateComponent')" width="30%" />
-									<button label="Back"
-										onClick="@command('resetModifyPopUpAndBack')" width="30%" />
-								</div>
-
-							</div>
-						</vlayout>
-					</window>
-<!-- Rename Window -->
-					<window id="renameRootPopupWindow"
-						sclass="popUpWindows" title="Rename PopUp" width="50%"
-						contentStyle="overflow:auto;" mode="modal"
-						visible="@load(vm.renamePopupVisibility)"
-						onCancel="@command('renameBack')" >
-						<vlayout>
-							<!-- Title component -->
-							<div>
-								<vlayout>
-									<label value="Rename the root"></label>
-									Node ID:
-									<textbox
-										value="@load(vm.root.description) @save(vm.attributeDataMap.id, before='renameProject')"
-										width="100%">
-									</textbox>
-									<div align="center">
-										<button label="Rename Project"
-											onClick="@command('renameProject')" width="30%" />
-										<button label="Back"
-											onClick="@command('renameBack')" width="30%" />
-									</div>
-
-								</vlayout>
-							</div>
-						</vlayout>
-					</window>
+					
+					<!-- Add Window -->
+					<include src="/addWindow.zul"></include>
+					<!-- Modify Window -->
+					<include src="/modifyWindow.zul"></include>
+					<!-- Rename Window -->
+					<include src="/renameWindow.zul"></include>
 				</div>
 			</west>
 			
@@ -184,9 +53,9 @@
 			</south>
 			<center border="0">
 					<div align="center">
-						<button iconSclass="z-icon-plus" onClick="addPopupWindow.setVisible(true)" disabled="@load(empty vm.selectedElement)"/>
+						<button iconSclass="z-icon-plus" onClick="@command('openPopUp', popUpType='add')" disabled="@load(empty vm.selectedElement)"/>
 						<button iconSclass="z-icon-minus" onClick="@command('deleteNode')" disabled="@load(empty vm.selectedElement or vm.selectedElement eq vm.root)"/>
-						<button iconSclass="z-icon-gear" onClick="@command('openModifyPopUp')"  disabled="@load(empty vm.selectedElement)"/>
+						<button iconSclass="z-icon-gear" onClick="@command('openPopUp', popUpType='modify')"  disabled="@load(empty vm.selectedElement)"/>
 					</div>		
 			</center>
 		</borderlayout>
