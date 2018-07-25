@@ -39,7 +39,6 @@ import zkVelocityLayout.FragmentPackage.FragmentType;
 
 public class MainPageViewModel {
 
-	private static final HashMap String = null;
 	private DraggableTreeCmsElement root;
 	private DraggableTreeModel model;
 	private DraggableTreeCmsElement selectedElement;
@@ -54,63 +53,6 @@ public class MainPageViewModel {
 	private boolean renamePopupVisibility = false;
 	private String treePath;
 	private String listPath;
-	
-	private void reloadTree(DraggableTreeCmsElement currentElement, JsonObject currentJsonObject, Boolean iAmRoot) throws Exception{
-
-			// ELEMENTS TO LOAD
-			Map<String, String> loadedMap = new HashMap<String, String>();
-			DraggableTreeElementType treeElementType=null;
-			String loadedDescription = null;
-			JsonArray currentChilds = new JsonArray();
-			Boolean loadedBoolean=null;
-			FragmentType loadedFragmentTypeDef=null;
-			// LOADING ELEMENTS ONE BY ONE
-			Gson gson = new Gson();
-			// CURRENT ATTRIBUTE MAP 
-			loadedMap = gson.fromJson(currentJsonObject.getAsJsonObject("treeAttributeDataMap"), Map.class);
-			System.out.println(loadedMap);
-			// ELEMENT TYPE 
-			treeElementType = gson.fromJson(currentJsonObject.getAsJsonObject().getAsJsonPrimitive("type"), DraggableTreeElementType.class);
-			System.out.println(treeElementType);
-			// CHILDREN LIST 
-			currentChilds = currentJsonObject.getAsJsonArray("childs");
-			System.out.println(currentChilds);
-			// DESCRIPTION 
-			loadedDescription=gson.fromJson(currentJsonObject.get("description"), String.class);
-			System.out.println(loadedDescription);
-			// TREE ELEMENT OPEN 
-			loadedBoolean = gson.fromJson(currentJsonObject.get("treeElementOpen"), Boolean.class);
-			System.out.println(loadedBoolean);
-			// FRAGMENTTYPEDEF
-			loadedFragmentTypeDef= gson.fromJson(currentJsonObject.getAsJsonObject().getAsJsonPrimitive("fragmentTypeDef"), FragmentType.class);
-			System.out.println(loadedFragmentTypeDef);
-
-			if (iAmRoot) {
-				currentElement.setDescription(loadedDescription); 
-				currentElement.setTreeAttributeDataMap(loadedMap);
-				
-				if (currentChilds.size()>0) {
-					Iterator<JsonElement> localChildren = currentChilds.iterator();
-					
-					while (localChildren.hasNext()) {
-						reloadTree(currentElement, localChildren.next().getAsJsonObject() ,false);
-					}
-				}	
-			}
-			else {
-				if(treeElementType.equals(DraggableTreeElementType.NORMAL)) {
-							
-					DraggableTreeCmsElement localNode = new DraggableTreeCmsElement(currentElement, loadedDescription, loadedFragmentTypeDef, loadedMap);		
-					root.recomputeSpacersRecursive();
-					if (currentChilds.size()>0) {
-						Iterator<JsonElement> localChildren = currentChilds.iterator();
-						while (localChildren.hasNext()) {
-							reloadTree(localNode,localChildren.next().getAsJsonObject() ,false);
-						}
-					}	
-				}
-			}
-	}
 	
 	@Init
 	@NotifyChange("*")
@@ -384,65 +326,64 @@ public class MainPageViewModel {
 		}
 	}
 	
-	public void fixLoadedRoot(DraggableTreeCmsElement currentElement) {
+	//////LOAD SAVED TREE	
+	private void reloadTree(DraggableTreeCmsElement currentElement, JsonObject currentJsonObject, Boolean iAmRoot) throws Exception{
 
-		DraggableTreeCmsElement rootCopy = null;
+		// ELEMENTS TO LOAD
+		Map<String, String> loadedMap = new HashMap<String, String>();
+		DraggableTreeElementType treeElementType=null;
+		String loadedDescription = null;
+		JsonArray currentChilds = new JsonArray();
+		Boolean loadedBoolean=null;
+		FragmentType loadedFragmentTypeDef=null;
+		// LOADING ELEMENTS ONE BY ONE
+		Gson gson = new Gson();
+		// CURRENT ATTRIBUTE MAP 
+		loadedMap = gson.fromJson(currentJsonObject.getAsJsonObject("treeAttributeDataMap"), Map.class);
+		System.out.println(loadedMap);
+		// ELEMENT TYPE 
+		treeElementType = gson.fromJson(currentJsonObject.getAsJsonObject().getAsJsonPrimitive("type"), DraggableTreeElementType.class);
+		System.out.println(treeElementType);
+		// CHILDREN LIST 
+		currentChilds = currentJsonObject.getAsJsonArray("childs");
+		System.out.println(currentChilds);
+		// DESCRIPTION 
+		loadedDescription=gson.fromJson(currentJsonObject.get("description"), String.class);
+		System.out.println(loadedDescription);
+		// TREE ELEMENT OPEN 
+		loadedBoolean = gson.fromJson(currentJsonObject.get("treeElementOpen"), Boolean.class);
+		System.out.println(loadedBoolean);
+		// FRAGMENTTYPEDEF
+		loadedFragmentTypeDef= gson.fromJson(currentJsonObject.getAsJsonObject().getAsJsonPrimitive("fragmentTypeDef"), FragmentType.class);
+		System.out.println(loadedFragmentTypeDef);
 
-		if (currentElement.getDescription().equals(root.getDescription())) {
-			rootCopy = new DraggableTreeCmsElement(null, root.getDescription(), null, root.getTreeAttributeDataMap());
+		if (iAmRoot) {
+			currentElement.setDescription(loadedDescription); 
+			currentElement.setTreeAttributeDataMap(loadedMap);
+			
+			if (currentChilds.size()>0) {
+				Iterator<JsonElement> localChildren = currentChilds.iterator();
+				
+				while (localChildren.hasNext()) {
+					reloadTree(currentElement, localChildren.next().getAsJsonObject() ,false);
+				}
+			}	
 		}
-
-		if (currentElement.getChilds().size() > 0) {
-			// int listSize=currentElement.getChilds().size();
-			// List<DraggableTreeElement> currentList = currentElement.getChilds();
-			// for(int i=0;i<listSize;i++) {
-			// fixLoadedRoot(currentList.get(i));
-			// }
-		} else {
-			new DraggableTreeCmsElement(currentElement.getParent(), currentElement.getDescription(),
-					currentElement.getFragmentTypeDef(), currentElement.getTreeAttributeDataMap());
-			DraggableTreeComponent.removeFromParent(currentElement);
-			rootCopy.recomputeSpacersRecursive();
+		else {
+			if(treeElementType.equals(DraggableTreeElementType.NORMAL)) {
+						
+				DraggableTreeCmsElement localNode = new DraggableTreeCmsElement(currentElement, loadedDescription, loadedFragmentTypeDef, loadedMap);		
+				idList.add(loadedMap.get("id"));
+				root.recomputeSpacersRecursive();
+				if (currentChilds.size()>0) {
+					Iterator<JsonElement> localChildren = currentChilds.iterator();
+					while (localChildren.hasNext()) {
+						reloadTree(localNode,localChildren.next().getAsJsonObject() ,false);
+					}
+				}	
+			}
 		}
-
-		// root=rootCopy;
-	}
-
-	public void copyElement(DraggableTreeElement cycleElement) {
-
-	}
-
-	// SAVE TREE AND ID LIST TO FILE
-	// @JsonIgnore
-	// @JsonProperty(value = "user_password")
-	// private void saveRoot (DraggableTreeCmsElement selectedElement) throws
-	// IOException {
-	//
-	// try (Writer treeWriterUpdate = new FileWriter(getTreePath())){
-	//
-	// Gson gson = new Gson();
-	// gson.toJson(selectedElement, treeWriterUpdate);
-	// treeWriterUpdate.close();
-	//
-	// }catch (Exception e) {
-	// e.printStackTrace();
-	// }
-	//
-	//
-	// try (){
-	// Gson gson = new Gson();
-	// gson.toJson(idList,listWriter);
-	// treeWriter.close();
-	// listWriter.close();
-	// System.out.println("Saved Root");
-	//
-	// }catch (IOException e) {
-	//
-	//
-	// }
-
-	// }
-
+}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
 	////// GETTERS AND SETTERS
 	public List<FragmentType> getFragmentList() {
