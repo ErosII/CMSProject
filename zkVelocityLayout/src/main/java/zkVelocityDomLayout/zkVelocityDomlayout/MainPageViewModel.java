@@ -3,6 +3,7 @@ package zkVelocityDomLayout.zkVelocityDomlayout;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -92,10 +93,14 @@ public class MainPageViewModel {
 	////// COMMANDS
 	@Command
 	@NotifyChange("*")
-	public void deleteNode() {
-		removeChildrenId(selectedElement);
+	public void deleteNode() throws Exception {
+		pageManip.removeFragment(selectedElement.getTreeAttributeDataMap().get("id"));
+		forceIframeRefresh();
+		forceIframeRefresh();
 		DraggableTreeComponent.removeFromParent(selectedElement);
 		root.recomputeSpacersRecursive();
+		removeChildrenId(selectedElement);
+		saveTreeToDisc();
 		selectedElement = null;
 	}
 
