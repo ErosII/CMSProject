@@ -43,10 +43,7 @@
 			</west>
 			
 			<east width="65%">
-				<vlayout>
-					<iframe id="iframeToReload" src="/templateFolder/mod.html" hflex="1"></iframe>
-					<button label="Refresh" onClick="iframeToReload.invalidate()"/>
-				</vlayout>
+				<iframe id="iframeToReload" src="generated-page.html" hflex="1" vflex="1"></iframe>
 			</east>
 			<south border="0">
 				<div align="center">Powered by ZK </div>	

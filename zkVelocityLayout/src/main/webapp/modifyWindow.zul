@@ -5,11 +5,11 @@
 	<vlayout>
 		<!-- Title component -->
 		<div
-			visible="@load(vm.fragmentList.get(0) eq vm.selectedElement.fragmentTypeDef)">
+			visible="@load(vm.fragmentList.get(0) eq vm.selectedElement.treeAttributeDataMap.fragmentType)">
 			<hlayout>
 				<label value="Modify a component"></label>
 				<label
-					value="@load(vm.selectedElement.fragmentTypeDef)">
+					value="@load(vm.selectedElement.treeAttributeDataMap.fragmentType)">
 				</label>
 			</hlayout>
 			Node ID:

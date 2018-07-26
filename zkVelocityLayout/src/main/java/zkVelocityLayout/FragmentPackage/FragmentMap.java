@@ -7,8 +7,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class FragmentMap {
-	static Map<FragmentType, HashMap<String, Boolean>> fragmentMap = new HashMap<FragmentType, HashMap<String,Boolean>>();
-	static List<FragmentType> fragmentList = new ArrayList<FragmentType>();
+	static Map<String, HashMap<String, Boolean>> fragmentMap = new HashMap<String, HashMap<String,Boolean>>();
+	static List<String> fragmentList = new ArrayList<String>();
 	
 	static{
 		HashMap<String, Boolean> titleMap=new HashMap<String, Boolean>();
@@ -27,28 +27,28 @@ public class FragmentMap {
 		
 		for(FragmentType fragmentName : FragmentType.values()) {
 			
-			fragmentList.add(fragmentName);
+			fragmentList.add(fragmentName.toString());
 			
 			if(fragmentName.equals(FragmentType.Title)) {
-				fragmentMap.put(fragmentName, titleMap);
+				fragmentMap.put(fragmentName.toString(), titleMap);
 			}
 		
 			if(fragmentName.equals(FragmentType.Subtitle)) {
-				fragmentMap.put(fragmentName, subtitleMap);
+				fragmentMap.put(fragmentName.toString(), subtitleMap);
 			}
 				
 			if(fragmentName.equals(FragmentType.Paragraph)) {
-				fragmentMap.put(fragmentName, paragraphMap);	
+				fragmentMap.put(fragmentName.toString(), paragraphMap);	
 			}
 			
 		}
 	}
 	
-	public static Map<FragmentType, HashMap<String, Boolean>> getFragmentMap() {
+	public static Map<String, HashMap<String, Boolean>> getFragmentMap() {
 		return fragmentMap;
 	} 
 	
-	public static List<FragmentType> getFragmentList() {
+	public static List<String> getFragmentList() {
 		return fragmentList;
 	} 
 

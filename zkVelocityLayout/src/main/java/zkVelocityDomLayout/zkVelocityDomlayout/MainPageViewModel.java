@@ -1,18 +1,14 @@
 package zkVelocityDomLayout.zkVelocityDomlayout;
 
+import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import javax.servlet.ServletContext;
-import org.apache.velocity.Template;
-import org.apache.velocity.VelocityContext;
-import org.apache.velocity.app.VelocityEngine;
 import org.zkoss.bind.annotation.BindingParam;
 import org.zkoss.bind.annotation.Command;
 import org.zkoss.bind.annotation.Init;
@@ -28,22 +24,26 @@ import biz.opengate.zkComponents.draggableTree.*;
 import biz.opengate.zkComponents.draggableTree.DraggableTreeElement.DraggableTreeElementType;
 import zkVelocityLayout.FragmentPackage.FragmentMap;
 import zkVelocityLayout.FragmentPackage.FragmentType;
+import zkVelocityDomLayout.zkVelocityDomlayout.FragmentGenerator;
+import zkVelocityDomLayout.zkVelocityDomlayout.PageManipulator;
 
 public class MainPageViewModel {
 
 	private DraggableTreeCmsElement root;
 	private DraggableTreeModel model;
 	private DraggableTreeCmsElement selectedElement;
-	private FileWriter out;
-	private FragmentType selectedFragment;
+	private String selectedFragment;
 	private Map<String, String> attributeDataMap;
 	private ArrayList<String> idList = new ArrayList<String>();
-	private Map<FragmentType, HashMap<String, Boolean>> fragmentMap;
-	private List<FragmentType> fragmentList;
+	private Map<String, HashMap<String, Boolean>> fragmentMap;
+	private List<String> fragmentList;
 	private boolean addPopupVisibility = false;
 	private boolean modifyPopupVisibility = false;
 	private boolean renamePopupVisibility = false;
+	
 	private String treePath;
+	private FragmentGenerator currentFragmentgenerator;
+	private PageManipulator pageManip;
 	
 	@Init
 	@NotifyChange("*")
@@ -54,23 +54,38 @@ public class MainPageViewModel {
 
 		try {
 			attributeDataMap.put("id", "root");
-			root = new DraggableTreeCmsElement(null, "root", null, attributeDataMap);
+			root = new DraggableTreeCmsElement(null, "root",attributeDataMap);
 			// LOAD MAIN JSON OBJECT
+			
 			FileReader reader = new FileReader(getTreePath());
 			JsonParser parser = new JsonParser();
 			// MAIN	JSON OBJECT
 			JsonObject draggableTreeCmsElement = (JsonObject) parser.parse(reader);
 			reloadTree(root, draggableTreeCmsElement, true);
-			saveTreeToDisc();
+			
+			//// FROM ALFONSO
+		    //// INITIALIZE PAGE MANIPULATOR 
+			String mainPagePath = WebApps.getCurrent().getServletContext().getRealPath("generated-page.html");	//uses ZK to resolve the path to the mainpage
+																												//NOTE the main page file must be inside the root dir of the webapp
+			//DEBUG 
+			 System.out.println("**DEBUG** ZK returned mainPagePath: " + mainPagePath); 
+			 pageManip = new PageManipulator(new File(mainPagePath), true, true);	//the last arg is to activate debug output
+				
 
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.out.println("Non saved root");
-			attributeDataMap.put("id", "root");
-			root = new DraggableTreeCmsElement(null, "root", null, attributeDataMap);
+			attributeDataMap.put("id", "generated-page-root");
+			root = new DraggableTreeCmsElement(null, "root", attributeDataMap);
 			saveTreeToDisc(); 
 			System.out.println("Saved default tree root");
 		}
+		
+		
+	    //initialize FragmentGenerator
+		String templatesFolderName = "templateFolder";	//NOTE the folder for the templates must be inside WEB-INF
+		currentFragmentgenerator = new FragmentGenerator(templatesFolderName);
+		System.out.println(templatesFolderName);
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -89,40 +104,50 @@ public class MainPageViewModel {
 	public void addComponent() throws Exception {
 		////// CHECK DATA
 		String errString = null;
-		errString = checkFields(idList, selectedFragment, attributeDataMap, fragmentMap.get(selectedFragment));
+		errString = checkFields(idList, selectedFragment.toString(), attributeDataMap, fragmentMap.get(selectedFragment.toString()));
 
 		if ((errString.equals("")) == true) {
-			generateFragment(attributeDataMap);
+			String output = currentFragmentgenerator.generateFragment(selectedFragment.toString(),attributeDataMap);
+			System.out.println(output);
 			// ADDING A NODE
-			new DraggableTreeCmsElement(selectedElement, attributeDataMap.get("id"), selectedFragment,
-					attributeDataMap);
+			attributeDataMap.put("fragmentType",selectedFragment);
+			DraggableTreeCmsElement newNode = new DraggableTreeCmsElement(selectedElement, attributeDataMap.get("id"),attributeDataMap);
+			// NEW NAME FOR THE SAME HASHMAP
+			Map<String, String> newElDataMap = newNode.getTreeAttributeDataMap();	//just saved for later brevity
+			newElDataMap.put("parentId", selectedElement.getTreeAttributeDataMap().get("id"));
+			newElDataMap.put("siblingsPosition", ( (Integer)selectedElement.getChilds().indexOf(newNode) ).toString());	//can't call .toString on primitive type int, so I use Integer
+			// ADDING ELEMENT TO HTML
+			System.out.println("ID " + newElDataMap.get("parentId"));
+			pageManip.addFragment(output, newElDataMap.get("parentId"), Integer.parseInt(newElDataMap.get("siblingsPosition")));																
 			root.recomputeSpacersRecursive();
 			idList.add(attributeDataMap.get("id"));
 			// RESET WINDOW SELECTIONS OR CONTENT
 			saveTreeToDisc();
+			forceIframeRefresh(); 
 			resetAndBack();
 		} else {
 			addPopupVisibility = true;
 			Clients.showNotification(errString);
 		}
 	}
-
+	
 	@Command
 	@NotifyChange("*")
 	public void updateComponent() throws Exception {
 		////// CHECK DATA
 		System.out.println(selectedElement.getTreeAttributeDataMap());
 		String errString = null;
-		errString = checkFields(idList, selectedElement.getFragmentTypeDef(), attributeDataMap,
-				fragmentMap.get(selectedElement.getFragmentTypeDef()));
-
+		errString = checkFields(idList, selectedElement.getTreeAttributeDataMap().get("fragmentType"), attributeDataMap, 
+								fragmentMap.get(selectedElement.getTreeAttributeDataMap().get("fragmentType")));
+		
 		if (errString.equals("")) {
 
 			if (attributeDataMap.get("id").equals("") || (attributeDataMap.get("id") == null)) {
 				modifyPopupVisibility = true;
 				Clients.showNotification("Node Id can not be empty. Reloded previous value.");
 			} else {
-				generateFragment(attributeDataMap);
+				String output = currentFragmentgenerator.generateFragment(selectedElement.getTreeAttributeDataMap().get("fragmentType"),attributeDataMap);
+				System.out.println(output);
 				///////////////////////////////////////////////////////////////////////////////////////////////////////////
 				////// NODE REMOVAL
 				idList.remove(selectedElement.getTreeAttributeDataMap().get("id"));
@@ -148,7 +173,7 @@ public class MainPageViewModel {
 			if(selectedElement.getDescription().equals(root.getDescription())){
 			renamePopupVisibility = true;
 			} else {
-			resetHashMap(selectedElement.getFragmentTypeDef());
+			resetHashMap(selectedElement.getTreeAttributeDataMap().get("fragmentType"));
 			modifyPopupVisibility = true;
 			}
 		}
@@ -156,12 +181,12 @@ public class MainPageViewModel {
 
 	@Command
 	@NotifyChange("attributeDataMap")
-	public void resetHashMap(@BindingParam("selectedFragment") FragmentType loadedFragment) {
+	public void resetHashMap(@BindingParam("selectedFragment") String loadedFragment) {
 		System.out.println(selectedElement.getTreeAttributeDataMap());
 		// TAKING THE CONTROL HASHMAP AS REFERERENCE TO POPULATE THE DEFAULT EMPTY
 		// HASHMAP
 		if (loadedFragment==null) {
-			for (String currentKey : fragmentMap.get(selectedFragment).keySet()) {
+			for (String currentKey : fragmentMap.get(selectedFragment.toString()).keySet()) {
 				attributeDataMap.put(currentKey, "");
 			}
 		}
@@ -193,11 +218,11 @@ public class MainPageViewModel {
 	public void resetAndBack() {
 		if (addPopupVisibility==true) {
 			addPopupVisibility = false;	
-			resetHashMap(selectedElement.getFragmentTypeDef());
+			resetHashMap(selectedElement.getTreeAttributeDataMap().get("fragmentType"));
 		}
 		if (modifyPopupVisibility==true){
 			modifyPopupVisibility = false;
-			resetHashMap(selectedElement.getFragmentTypeDef());
+			resetHashMap(selectedElement.getTreeAttributeDataMap().get("fragmentType"));
 		}
 		if (renamePopupVisibility==true){
 			renamePopupVisibility = false;
@@ -214,7 +239,7 @@ public class MainPageViewModel {
 	////// UTILITIES
 
 	////// CHECK IF ALL THE MANDATORY FIELDS ARE NOT EMPTY
-	private String checkFields(ArrayList<String> idList, FragmentType selectedType, Map<String, String> attributeMap,
+	private String checkFields(ArrayList<String> idList, String selectedType, Map<String, String> attributeMap,
 			HashMap<String, Boolean> controlComponentMap) {
 		String errMsgFun = "";
 
@@ -253,30 +278,6 @@ public class MainPageViewModel {
 		return errMsgFun;
 	}
 
-	////// GENERATE HTML FRAGMENT
-	private void generateFragment(Map<String, String> userMap) throws Exception {
-		////// SETTING UP VELOCITY
-		VelocityEngine engine = new VelocityEngine();
-		ServletContext sc = WebApps.getCurrent().getServletContext();
-		engine.setApplicationAttribute("javax.servlet.ServletContext", sc);
-		engine.setProperty("resource.loader", "webapp");
-		engine.setProperty("webapp.resource.loader.class", "org.apache.velocity.tools.view.WebappResourceLoader");
-		engine.setProperty("webapp.resource.loader.path", "/templateFolder/");
-		engine.init();
-		////// GETTING THE TEMPLATE AND USE IT
-		Template template = engine.getTemplate("template.vm");
-		VelocityContext vc = new VelocityContext();
-		vc.put("attributeDataMap", userMap);
-		StringWriter writer = new StringWriter();
-		template.merge(vc, writer);
-		////// SAVING OUTPUT
-		String path = System.getProperty("user.home");
-		out = new FileWriter(path + "/git/CMSProject/zkVelocityLayout/src/main/webapp/templateFolder/mod.html");
-		out.write(writer.toString());
-		out.close();
-		System.out.println(writer);
-	}
-
 	////// REMOVE CHILDREN ID
 	public void removeChildrenId(DraggableTreeElement currentElement) {
 		idList.remove(currentElement.getDescription());
@@ -311,28 +312,19 @@ public class MainPageViewModel {
 		String loadedDescription = null;
 		JsonArray currentChilds = new JsonArray();
 		Boolean loadedBoolean=null;
-		FragmentType loadedFragmentTypeDef=null;
 		// LOADING ELEMENTS ONE BY ONE
 		Gson gson = new Gson();
 		// CURRENT ATTRIBUTE MAP 
 		loadedMap = gson.fromJson(currentJsonObject.getAsJsonObject("treeAttributeDataMap"), Map.class);
-		System.out.println(loadedMap);
 		// ELEMENT TYPE 
 		treeElementType = gson.fromJson(currentJsonObject.getAsJsonObject().getAsJsonPrimitive("type"), DraggableTreeElementType.class);
-		System.out.println(treeElementType);
 		// CHILDREN LIST 
 		currentChilds = currentJsonObject.getAsJsonArray("childs");
-		System.out.println(currentChilds);
 		// DESCRIPTION 
 		loadedDescription=gson.fromJson(currentJsonObject.get("description"), String.class);
-		System.out.println(loadedDescription);
 		// TREE ELEMENT OPEN 
 		loadedBoolean = gson.fromJson(currentJsonObject.get("treeElementOpen"), Boolean.class);
-		System.out.println(loadedBoolean);
-		// FRAGMENTTYPEDEF
-		loadedFragmentTypeDef= gson.fromJson(currentJsonObject.getAsJsonObject().getAsJsonPrimitive("fragmentTypeDef"), FragmentType.class);
-		System.out.println(loadedFragmentTypeDef);
-
+		
 		if (iAmRoot) {
 			currentElement.setDescription(loadedDescription); 
 			currentElement.setTreeAttributeDataMap(loadedMap);
@@ -347,7 +339,7 @@ public class MainPageViewModel {
 		}
 		else {
 			if(treeElementType.equals(DraggableTreeElementType.NORMAL)) {
-				DraggableTreeCmsElement localNode = new DraggableTreeCmsElement(currentElement, loadedDescription, loadedFragmentTypeDef, loadedMap);		
+				DraggableTreeCmsElement localNode = new DraggableTreeCmsElement(currentElement, loadedDescription, loadedMap);		
 				idList.add(loadedMap.get("id"));
 				root.recomputeSpacersRecursive();	
 
@@ -358,11 +350,18 @@ public class MainPageViewModel {
 					}				
 				}	
 			}
-		}
-}
+		}	
+	}
+	
+	// IFRAME REFRESH
+	private void forceIframeRefresh() {
+		Clients.evalJavaScript("document.getElementsByTagName(\"iframe\")[0].contentWindow.location.reload(true);");	//see: https://stackoverflow.com/questions/13477451/can-i-force-a-hard-refresh-on-an-iframe-with-javascript?lq=1
+		System.out.println("**DEBUG** Forced Iframe refresh.");
+	}
+	
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
 	////// GETTERS AND SETTERS
-	public List<FragmentType> getFragmentList() {
+	public List<String> getFragmentList() {
 		return FragmentMap.getFragmentList();
 	}
 
@@ -398,11 +397,11 @@ public class MainPageViewModel {
 		this.idList = idList;
 	}
 
-	public FragmentType getSelectedFragment() {
+	public String getSelectedFragment() {
 		return selectedFragment;
 	}
 
-	public void setSelectedFragment(FragmentType selectedFragment) {
+	public void setSelectedFragment(String selectedFragment) {
 		this.selectedFragment = selectedFragment;
 	}
 

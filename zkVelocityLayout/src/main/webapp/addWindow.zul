@@ -8,7 +8,7 @@
 
 			<listbox model="@load(vm.fragmentList)" mold="select"
 				selectedItem="@bind(vm.selectedFragment)" rows="1" width="100%"
-				onSelect="@command('resetHashMap', selectedFragment=vm.selectedFragment)">
+				onSelect="@command('resetHashMap', selectedFragment=vm.selectedFragment.toString())">
 			</listbox>
 
 			<button label="Back"
